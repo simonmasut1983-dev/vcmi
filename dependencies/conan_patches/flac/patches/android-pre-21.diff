@@ -1,0 +1,11 @@
+--- a/src/flac/utils.c	
++++ b/src/flac/utils.c
+@@ -200,7 +200,7 @@ size_t strlen_console(const char *text)
+ {
+ #ifdef _WIN32
+ 	return strlen_utf8(text);
+-#elif defined(__DJGPP__) /* workaround for DJGPP missing wcswidth() */
++#elif defined(__DJGPP__) || (defined(__ANDROID_API__) && __ANDROID_API__ < 21)
+ 	return strlen(text);
+ #else
+ 	size_t len;

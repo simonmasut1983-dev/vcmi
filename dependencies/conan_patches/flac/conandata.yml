@@ -1,0 +1,4 @@
+patches:
+  "1.4.2":
+    - patch_file: "patches/android-pre-21.diff"
+      patch_description: "https://github.com/android/ndk/issues/1108"
