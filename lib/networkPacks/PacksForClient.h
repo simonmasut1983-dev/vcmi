@@ -1212,6 +1212,7 @@ struct DLL_LINKAGE NewTurn : public CPackForClient
 	std::map<PlayerColor, ResourceSet> playerIncome;
 	std::optional<RumorState> newRumor; // only on new weeks
 	std::optional<InfoWindow> newWeekNotification; // only on new week
+	bool resetTownDailyLimits = true;
 
 	NewTurn() = default;
 
@@ -1226,6 +1227,28 @@ struct DLL_LINKAGE NewTurn : public CPackForClient
 		h & playerIncome;
 		h & newRumor;
 		h & newWeekNotification;
+		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS))
+			h & resetTownDailyLimits;
+	}
+};
+
+struct DLL_LINKAGE WeeklySimturnsLocalDay : public CPackForClient
+{
+	PlayerColor player;
+	ResourceSet income;
+	std::vector<SetMovePoints> heroesMovement;
+	std::vector<SetMana> heroesMana;
+	std::vector<ObjectInstanceID> towns;
+
+	void visitTyped(ICPackVisitor & visitor) override;
+
+	template <typename Handler> void serialize(Handler & h)
+	{
+		h & player;
+		h & income;
+		h & heroesMovement;
+		h & heroesMana;
+		h & towns;
 	}
 };
 

@@ -129,6 +129,12 @@ OptionsTabBase::OptionsTabBase(const JsonPath & configPath)
 		GAME->server().setExtraOptionsInfo(info);
 	});
 
+	addCallback("setWeeklySimturns", [this](int index){
+		ExtraOptionsInfo info = SEL->getStartInfo()->extraOptionsInfo;
+		info.weeklySimturns = index;
+		GAME->server().setExtraOptionsInfo(info);
+	});
+
 	addCallback("setTurnTimerAccumulate", [&](int index){
 		TurnTimerInfo info = SEL->getStartInfo()->turnTimerInfo;
 		info.accumulatingTurnTimer = index;
@@ -438,6 +444,12 @@ void OptionsTabBase::recreate(bool campaign)
 	{
 		buttonUnlimitedReplay->setSelectedSilent(SEL->getStartInfo()->extraOptionsInfo.unlimitedReplay);
 		buttonUnlimitedReplay->block(GAME->server().isGuest());
+	}
+
+	if(auto buttonWeeklySimturns = widget<CToggleButton>("buttonWeeklySimturns"))
+	{
+		buttonWeeklySimturns->setSelectedSilent(SEL->getStartInfo()->extraOptionsInfo.weeklySimturns);
+		buttonWeeklySimturns->block(GAME->server().isGuest());
 	}
 
 	if(auto buttonTurnOptions = widget<CButton>("buttonTurnOptions"))

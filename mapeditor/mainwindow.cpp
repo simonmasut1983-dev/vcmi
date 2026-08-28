@@ -50,6 +50,8 @@
 #include "mapsettings/translations.h"
 #include "mapsettings/modsettings.h"
 #include "PlayerSettingsDialog.h"
+#include "regioncontrollerdialog.h"
+#include "../lib/mapping/StrategicRegionMap.h"
 #include "validator.h"
 #include "helper.h"
 #include "campaigneditor/campaigneditor.h"
@@ -273,6 +275,28 @@ MainWindow::MainWindow(QWidget* parent) :
 	ui->actionZoom_reset->setIcon(QIcon{":/icons/zoom_zero.png"});
 	ui->actionCampaignEditor->setIcon(QIcon{":/icons/mapeditor.64x64.png"});
 	ui->actionTemplateEditor->setIcon(QIcon{":/icons/dice.png"});
+	subregionLayerAction = new QAction(QIcon{":/icons/display-region.png"}, tr("Show Subregions"), this);
+	subregionLayerAction->setCheckable(true);
+	subregionLayerAction->setChecked(true);
+	subregionLayerAction->setEnabled(false);
+	ui->toolBar->insertAction(ui->actionGrid, subregionLayerAction);
+	ui->menuView->addAction(subregionLayerAction);
+	connect(subregionLayerAction, &QAction::toggled, this, [this](bool checked)
+	{
+		if(controller.map())
+			controller.setSubregionLayerVisible(checked);
+	});
+
+	QWidget * subregionPage = new QWidget(this);
+	subregionLayout = new QVBoxLayout(subregionPage);
+	subregionLayout->setContentsMargins(0, 0, 0, 0);
+	subregionLayout->setSpacing(1);
+	ui->toolBox->addItem(subregionPage, tr("SubRegions"));
+
+	regionControllerAction = new QAction(tr("Region Controller"), this);
+	regionControllerAction->setEnabled(false);
+	ui->menuMap->addAction(regionControllerAction);
+	connect(regionControllerAction, &QAction::triggered, this, &MainWindow::on_actionRegionController_triggered);
 
 	// Add combobox action
 	for (QWidget* c : QList<QWidget*>{ ui->toolBar, ui->menuView })
@@ -448,6 +472,14 @@ void MainWindow::initializeMap(bool isNew)
 	ui->actionMapSettings->setEnabled(true);
 	ui->actionPlayers_settings->setEnabled(true);
 	ui->actionTranslations->setEnabled(true);
+	if(regionControllerAction)
+		regionControllerAction->setEnabled(true);
+	if(subregionLayerAction)
+	{
+		subregionLayerAction->setEnabled(true);
+		controller.setSubregionLayerVisible(subregionLayerAction->isChecked());
+	}
+	refreshSubregionButtons();
 	for(auto & box : levelComboBoxes)
 	{
 		box->clear();
@@ -745,6 +777,48 @@ void MainWindow::roadOrRiverButtonClicked(ui8 type, bool isRoad)
 	controller.commitRoadOrRiverChange(mapLevel, type, isRoad);
 }
 
+void MainWindow::subregionButtonClicked(int subregionId)
+{
+	controller.commitSubregionChange(mapLevel, subregionId);
+}
+
+void MainWindow::refreshSubregionButtons()
+{
+	if(!subregionLayout)
+		return;
+
+	while(auto * item = subregionLayout->takeAt(0))
+	{
+		delete item->widget();
+		delete item;
+	}
+
+	if(!controller.map())
+	{
+		subregionLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding));
+		return;
+	}
+
+	for(const auto & subregion : controller.map()->strategicRegionMap.subregions)
+	{
+		QPixmap pixmap(24, 24);
+		pixmap.fill(Qt::transparent);
+		QPainter painter(&pixmap);
+		QColor color(QString::fromStdString(subregion.color));
+		if(!color.isValid())
+			color = QColor(255, 255, 255);
+		painter.fillRect(1, 1, 22, 22, color);
+		painter.setPen(Qt::black);
+		painter.drawRect(1, 1, 22, 22);
+
+		auto * button = new QPushButton(QIcon(pixmap), QString::fromStdString(subregion.name), this);
+		button->setIconSize(QSize(24, 24));
+		subregionLayout->addWidget(button);
+		connect(button, &QPushButton::clicked, this, [this, subregionId = subregion.id](){ subregionButtonClicked(subregionId); });
+	}
+
+	subregionLayout->addItem(new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding));
+}
 void MainWindow::addGroupIntoCatalog(const QString & groupName, bool staticOnly)
 {
 	auto knownObjects = LIBRARY->objtypeh->knownObjects();
@@ -1212,6 +1286,24 @@ void MainWindow::on_inspectorWidget_itemChanged(QTableWidgetItem *item)
 	Inspector inspector(controller, obj, tableWidget);
 	inspector.setProperty(param, item);
 	controller.commitObjectChange(mapLevel);
+}
+
+void MainWindow::on_actionRegionController_triggered()
+{
+	if(!controller.map())
+		return;
+
+	RegionControllerDialog dialog(controller, this);
+	dialog.setWindowModality(Qt::ApplicationModal);
+	dialog.setModal(true);
+	connect(&dialog, &RegionControllerDialog::strategicRegionMapChanged, this, [this]()
+	{
+		refreshSubregionButtons();
+		controller.sceneForceUpdate();
+	});
+	dialog.exec();
+	refreshSubregionButtons();
+	controller.sceneForceUpdate();
 }
 
 void MainWindow::on_actionMapSettings_triggered()

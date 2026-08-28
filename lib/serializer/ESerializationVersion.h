@@ -62,9 +62,12 @@ enum class ESerializationVersion : int32_t
 	DISABLE_TACTICS, // disable tactics
 	REWARDABLE_EXTENSIONS_2, // movement points limiter for rewardables
 	BONUS_TRIGGER, // bonus that allows triggered effects in combat
+	WEEKLY_SIMTURNS, // support weekly simultaneous turns option
+	WEEKLY_SIMTURNS_TURN_ORDER, // support weekly simultaneous turns state
+	WEEKLY_SIMTURNS_CREATURE_PHASE_REMOVAL, // support removing neutral stacks at end of weekly simultaneous turns phase
 
 	RELEASE_170 = HOTA_MAP_STACK_COUNT,
-	CURRENT = BONUS_TRIGGER,
+	CURRENT = WEEKLY_SIMTURNS_CREATURE_PHASE_REMOVAL,
 };
 
 static_assert(ESerializationVersion::MINIMAL <= ESerializationVersion::CURRENT, "Invalid serialization version definition!");

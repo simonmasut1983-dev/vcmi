@@ -1105,15 +1105,38 @@ void GameStatePackVisitor::visitNewTurn(NewTurn & pack)
 	for(auto & creatureSet : pack.availableCreatures) //set available creatures in towns
 		creatureSet.visit(*this);
 
-	for (const auto & townID : gs.getMap().getAllTowns())
+	if(pack.resetTownDailyLimits)
 	{
-		auto t = gs.getTown(townID);
-		t->built = 0;
-		t->spellResearchCounterDay = 0;
+		for (const auto & townID : gs.getMap().getAllTowns())
+		{
+			auto t = gs.getTown(townID);
+			t->built = 0;
+			t->spellResearchCounterDay = 0;
+		}
 	}
 
 	if(pack.newRumor)
 		gs.currentRumor = *pack.newRumor;
+}
+
+void GameStatePackVisitor::visitWeeklySimturnsLocalDay(WeeklySimturnsLocalDay & pack)
+{
+	auto * player = gs.getPlayerState(pack.player);
+	player->resources += pack.income;
+	player->resources.amin(GameConstants::PLAYER_RESOURCES_CAP);
+
+	for(auto & manaPack : pack.heroesMana)
+		manaPack.visit(*this);
+
+	for(auto & movePack : pack.heroesMovement)
+		movePack.visit(*this);
+
+	for(const auto & townID : pack.towns)
+	{
+		auto * town = gs.getTown(townID);
+		town->built = 0;
+		town->spellResearchCounterDay = 0;
+	}
 }
 
 void GameStatePackVisitor::visitSetObjectProperty(SetObjectProperty & pack)

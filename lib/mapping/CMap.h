@@ -14,6 +14,7 @@
 #include "CMapHeader.h"
 #include "TerrainTile.h"
 #include "MapTilesStorage.h"
+#include "StrategicRegionMap.h"
 
 #include "../mapObjects/CGObjectInstance.h"
 #include "../callback/GameCallbackHolder.h"
@@ -259,6 +260,7 @@ public:
 	std::set<ArtifactID> allowedArtifact;
 	std::set<SecondarySkill> allowedAbilities;
 	std::vector<CMapEvent> events;
+	StrategicRegionMap strategicRegionMap;
 	int3 grailPos;
 	int grailRadius;
 

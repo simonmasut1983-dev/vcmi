@@ -144,7 +144,16 @@ private:
 	void onSelection();
 };
 
+class SubregionLayer: public AbstractViewportLayer
+{
+	Q_OBJECT
+public:
+	SubregionLayer(MapSceneBase * s);
+	void redrawSubregions(const std::vector<int3> & tiles);
 
+protected:
+	QGraphicsItem * draw(const QRectF & section) override;
+};
 class TerrainLayer: public AbstractViewportLayer
 {
 	Q_OBJECT

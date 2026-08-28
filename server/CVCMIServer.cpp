@@ -24,6 +24,7 @@
 #include "../lib/gameState/CGameState.h"
 #include "../lib/mapping/CMapInfo.h"
 #include "../lib/mapping/CMapHeader.h"
+#include "../lib/mapping/CMap.h"
 #include "../lib/modding/ModIncompatibility.h"
 #include "../lib/rmg/CMapGenOptions.h"
 #include "../lib/serializer/CMemorySerializer.h"
@@ -258,6 +259,18 @@ void CVCMIServer::prepareToRestart()
 
 bool CVCMIServer::prepareToStartGame()
 {
+	if(!canStartAssignedClients())
+	{
+		announceMessage(LIBRARY->generaltexth->translate("vcmi.lobby.start.unassignedConnectedClient"));
+		return false;
+	}
+
+	if(si->extraOptionsInfo.weeklySimturns && !canStartWeeklySimturns())
+	{
+		announceMessage(LIBRARY->generaltexth->translate("vcmi.optionsTab.weeklySimturns.twoConnectedPlayersRequired"));
+		return false;
+	}
+
 	Load::ProgressAccumulator progressTracking;
 	Load::Progress current(1);
 	progressTracking.include(current);
@@ -346,6 +359,11 @@ bool CVCMIServer::prepareToStartGame()
 	if (!started)
 		return false;
 
+	if(si->extraOptionsInfo.weeklySimturns && !hasWeeklySimturnsRequiredSpellBans(*newGH))
+	{
+		announceMessage(LIBRARY->generaltexth->translate("vcmi.optionsTab.weeklySimturns.requiredSpellBans"));
+		return false;
+	}
 	gh = std::move(newGH);
 
 	if(lobbyProcessor)
@@ -1051,6 +1069,79 @@ PlayerConnectionID CVCMIServer::getIdOfFirstUnallocatedPlayer() const
 	return PlayerConnectionID::PLAYER_AI;
 }
 
+bool CVCMIServer::canStartAssignedClients() const
+{
+	if(activeConnections.size() <= 1)
+		return true;
+
+	for(const auto & activeConnection : activeConnections)
+	{
+		if(isClientHost(activeConnection->connectionID))
+			continue;
+
+		auto players = getAllClientPlayers(activeConnection->connectionID);
+		if(players.empty())
+		{
+			logNetwork->warn("Cannot start game: connection %d has no assigned player", static_cast<int>(activeConnection->connectionID));
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool CVCMIServer::canEnableWeeklySimturns() const
+{
+	if(!si || !mi || !mi->mapHeader || si->playerInfos.size() != 2)
+		return false;
+
+	auto firstPlayer = si->playerInfos.begin();
+	auto secondPlayer = std::next(firstPlayer);
+	return firstPlayer->second.isControlledByHuman() &&
+		secondPlayer->second.isControlledByHuman() &&
+		mi->mapHeader->players[firstPlayer->first.getNum()].team != mi->mapHeader->players[secondPlayer->first.getNum()].team;
+}
+
+bool CVCMIServer::canStartWeeklySimturns() const
+{
+	if(!canEnableWeeklySimturns())
+		return false;
+
+	std::set<GameConnectionID> assignedConnections;
+	for(const auto & playerInfo : si->playerInfos)
+	{
+		const auto & player = playerInfo.second;
+		if(!player.isControlledByHuman() || player.connectedPlayerIDs.size() != 1)
+			return false;
+
+		const auto playerName = playerNames.find(*player.connectedPlayerIDs.begin());
+		if(playerName == playerNames.end() || playerName->second.connection == GameConnectionID::INVALID)
+			return false;
+
+		assignedConnections.insert(playerName->second.connection);
+	}
+
+	return assignedConnections.size() == si->playerInfos.size();
+}
+
+bool CVCMIServer::hasWeeklySimturnsRequiredSpellBans(const CGameHandler & handler) const
+{
+	static const std::array requiredBannedSpells = {
+		SpellID(SpellID::FLY),
+		SpellID(SpellID::WATER_WALK),
+		SpellID(SpellID::DIMENSION_DOOR)
+	};
+
+	const auto & allowedSpells = handler.gameState().getMap().allowedSpells;
+	for(const auto & spell : requiredBannedSpells)
+	{
+		if(vstd::contains(allowedSpells, spell))
+			return false;
+	}
+
+	return true;
+}
+
 void CVCMIServer::multiplayerWelcomeMessage()
 {
 	int humanPlayer = 0;
@@ -1101,6 +1192,8 @@ void CVCMIServer::multiplayerWelcomeMessage()
 		optionIds.emplace_back("vcmi.optionsTab.cheatAllowed.hover");
 	if(si->extraOptionsInfo.unlimitedReplay)
 		optionIds.emplace_back("vcmi.optionsTab.unlimitedReplay.hover");
+	if(si->extraOptionsInfo.weeklySimturns)
+		optionIds.emplace_back("vcmi.optionsTab.weeklySimturns.hover");
 
 	if(!optionIds.size()) // No settings to publish
 		return;
@@ -1196,4 +1289,6 @@ void CVCMIServer::sendPack(CPackForClient & pack, GameConnectionID connectionID)
 		if (c->connectionID == connectionID)
 			c->sendPack(pack);
 }
+
+
 

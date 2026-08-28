@@ -271,7 +271,6 @@ public:
 			h & *statistics;
 		}
 
-
 #if SCRIPTING_ENABLED
 		JsonNode scriptsState;
 		if(h.saving)

@@ -41,6 +41,9 @@ class TurnOrderProcessor : boost::noncopyable
 	std::set<PlayerColor> actingPlayers;
 	std::set<PlayerColor> actedPlayers;
 
+	std::map<PlayerColor, int> playerDays;
+	std::set<PlayerColor> awaitingWeeklySyncPlayers;
+
 	std::optional<int> simturnsMinDurationDays;
 	std::optional<int> simturnsMaxDurationDays;
 
@@ -69,9 +72,17 @@ class TurnOrderProcessor : boost::noncopyable
 
 	std::vector<PlayerPair> computeContactStatus() const;
 
+	bool weeklySimturnsEnabled() const;
+	bool allWeeklySimturnsPlayersAwaitSync() const;
+	bool weeklySimturnsPhaseEndsBetween(int startDay, int endDay) const;
+	void removeWeeklySimturnsPhaseCreatures();
+
 	void doStartNewDay();
-	void doStartPlayerTurn(PlayerColor which);
+	void doStartNewWeek();
+	void doStartPlayerTurn(PlayerColor which, bool applyStartOfTurnEffects = true);
 	void doEndPlayerTurn(PlayerColor which);
+	void doRestartWeeklyPlayerTurn(PlayerColor which);
+	void doWaitForWeeklySync(PlayerColor which);
 
 	bool isPlayerAwaitsTurn(PlayerColor which) const;
 	bool isPlayerAwaitsNewDay(PlayerColor which) const;
@@ -112,5 +123,16 @@ public:
 		h & actedPlayers;
 		h & simturnsMinDurationDays;
 		h & simturnsMaxDurationDays;
+
+		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS_TURN_ORDER))
+		{
+			h & playerDays;
+			h & awaitingWeeklySyncPlayers;
+		}
+		else
+		{
+			playerDays.clear();
+			awaitingWeeklySyncPlayers.clear();
+		}
 	}
 };

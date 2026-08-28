@@ -187,6 +187,7 @@ set(lib_MAIN_SRCS
 	mapping/MapReaderH3M.cpp
 	mapping/MapFormatJson.cpp
 	mapping/MapFormatSettings.cpp
+	mapping/StrategicRegionMap.cpp
 	mapping/ObstacleProxy.cpp
 
 	modding/ActiveModsInSaveList.cpp

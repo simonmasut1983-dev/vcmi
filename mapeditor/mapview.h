@@ -65,6 +65,7 @@ public:
 	GridLayer gridView;
 	PassabilityLayer passabilityView;
 	SelectionTerrainLayer selectionTerrainView;
+	SubregionLayer subregionView;
 	TerrainLayer terrainView;
 	ObjectsLayer objectsView;
 	SelectionObjectsLayer selectionObjectsView;

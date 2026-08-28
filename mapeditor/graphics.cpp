@@ -286,25 +286,26 @@ std::shared_ptr<Animation> Graphics::getHeroAnimation(const std::shared_ptr<cons
 }
 
 std::shared_ptr<Animation> Graphics::getAnimation(const std::shared_ptr<const ObjectTemplate> info)
-{	
-	if(info->animationFile.empty())
+{
+	const AnimationPath & animationFile = info->editorAnimationFile.empty() ? info->animationFile : info->editorAnimationFile;
+	if(animationFile.empty())
 	{
 		logGlobal->warn("Def name for obj (%d,%d) is empty!", info->id, info->subid);
 		return std::shared_ptr<Animation>();
 	}
-	
-	std::shared_ptr<Animation> ret = mapObjectAnimations[info->animationFile.getName()];
-	
+
+	std::shared_ptr<Animation> ret = mapObjectAnimations[animationFile.getName()];
+
 	//already loaded
 	if(ret)
 	{
 		ret->preload();
 		return ret;
 	}
-	
-	ret = std::make_shared<Animation>(info->animationFile.getOriginalName());
-	mapObjectAnimations[info->animationFile.getName()] = ret;
-	
+
+	ret = std::make_shared<Animation>(animationFile.getOriginalName());
+	mapObjectAnimations[animationFile.getName()] = ret;
+
 	ret->preload();
 	return ret;
 }

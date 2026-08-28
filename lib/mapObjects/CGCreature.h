@@ -50,6 +50,7 @@ public:
 	UpgradedStackPresence upgradedStackPresence = UpgradedStackPresence::RANDOM;
 	int8_t joiningPercentage = -1;
 	bool joinOnlyForMoney = false;
+	bool removeAfterSimturnsPhase = true;
 
 	bool refusedJoining = false;
 
@@ -104,6 +105,11 @@ public:
 			h & upgradedStackPresence;
 			h & joinOnlyForMoney;
 		}
+
+		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS_CREATURE_PHASE_REMOVAL))
+			h & removeAfterSimturnsPhase;
+		else
+			removeAfterSimturnsPhase = true;
 	}
 protected:
 	void setPropertyDer(ObjProperty what, ObjPropertyID identifier) override;

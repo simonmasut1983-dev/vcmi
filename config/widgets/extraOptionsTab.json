@@ -55,6 +55,13 @@
 					"callback" : "setUnlimitedReplay",
 					"help" : "vcmi.optionsTab.unlimitedReplay",
 					"selected" : true
+				},
+				{
+					"name": "buttonWeeklySimturns",
+					"image": "lobby/checkbox",
+					"callback" : "setWeeklySimturns",
+					"help" : "vcmi.optionsTab.weeklySimturns",
+					"selected" : false
 				}
 			]
 		},
@@ -78,6 +85,13 @@
 					"alignment": "left",
 					"color": "yellow",
 					"text": "vcmi.optionsTab.unlimitedReplay.hover"
+				},
+				{
+					"name": "labelWeeklySimturns",
+					"font": "small",
+					"alignment": "left",
+					"color": "yellow",
+					"text": "vcmi.optionsTab.weeklySimturns.hover"
 				}
 			]
 		}

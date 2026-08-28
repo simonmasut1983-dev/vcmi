@@ -745,6 +745,7 @@ MapScene::MapScene(int lvl):
 	gridView(this),
 	passabilityView(this),
 	selectionTerrainView(this),
+	subregionView(this),
 	terrainView(this),
 	objectsView(this),
 	selectionObjectsView(this),
@@ -773,7 +774,8 @@ std::list<AbstractViewportLayer *> MapScene::getDynamicLayers()
 		&passabilityView,
 		&objectPickerView,
 		&selectionTerrainView,
-		&selectionObjectsView
+		&selectionObjectsView,
+		&subregionView
 	};
 }
 
@@ -786,6 +788,7 @@ void MapScene::createMap()
 	selectionTerrainView.show(true);
 	selectionObjectsView.show(true);
 	objectPickerView.show(true);
+	subregionView.show(true);
 }
 
 void MapScene::terrainSelected(bool anythingSelected)

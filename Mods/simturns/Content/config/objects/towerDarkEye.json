@@ -1,0 +1,21 @@
+{
+	"towerDarkEye" : {
+		"name" : "Tower Dark Eye",
+		"handler" : "generic",
+		"types" : {
+			"object" : {
+				"name" : "Tower Dark Eye",
+				"templates" : {
+					"normal" : {
+						"animation" : "towerDarkEye",
+						"editorAnimation" : "towerDarkEye",
+						"mask" : [ "VV", "VB" ]
+					}
+				}
+			}
+		}
+	}
+}
+
+
+

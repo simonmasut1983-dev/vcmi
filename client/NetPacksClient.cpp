@@ -358,6 +358,11 @@ void ApplyClientNetPackVisitor::visitNewTurn(NewTurn & pack)
 	}
 }
 
+void ApplyClientNetPackVisitor::visitWeeklySimturnsLocalDay(WeeklySimturnsLocalDay & pack)
+{
+	callInterfaceIfPresent(cl, pack.player, &CGameInterface::invalidatePaths);
+}
+
 void ApplyClientNetPackVisitor::visitGiveBonus(GiveBonus & pack)
 {
 	callAllInterfaces(cl, &CGameInterface::invalidatePaths);

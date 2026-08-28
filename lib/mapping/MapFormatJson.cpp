@@ -814,6 +814,8 @@ void CMapFormatJson::serializeOptions(JsonSerializeFormat & handler)
 
 	handler.serializeLIC("allowedSpells", &SpellID::decode, &SpellID::encode, LIBRARY->spellh->getDefaultAllowed(), map->allowedSpells);
 
+	handler.serializeStruct("strategicRegionMap", map->strategicRegionMap);
+
 	//todo:events
 }
 

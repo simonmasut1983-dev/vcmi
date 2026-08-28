@@ -54,6 +54,7 @@ public:
 	void visitDisassembledArtifact(DisassembledArtifact & pack) override;
 	void visitHeroVisit(HeroVisit & pack) override;
 	void visitNewTurn(NewTurn & pack) override;
+	void visitWeeklySimturnsLocalDay(WeeklySimturnsLocalDay & pack) override;
 	void visitGiveBonus(GiveBonus & pack) override;
 	void visitChangeObjPos(ChangeObjPos & pack) override;
 	void visitPlayerEndsTurn(PlayerEndsTurn & pack) override;

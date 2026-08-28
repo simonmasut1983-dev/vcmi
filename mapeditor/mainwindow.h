@@ -12,6 +12,7 @@
 class ObjectBrowser;
 class ObjectBrowserProxyModel;
 class MapSettings;
+class QVBoxLayout;
 
 VCMI_LIB_NAMESPACE_BEGIN
 class CConsoleHandler;
@@ -99,6 +100,7 @@ private slots:
 
 	void terrainButtonClicked(TerrainId terrain);
 	void roadOrRiverButtonClicked(ui8 type, bool isRoad);
+	void subregionButtonClicked(int subregionId);
 	void currentCoordinatesChanged(int x, int y);
 
 	void on_terrainFilterCombo_currentIndexChanged(int index);
@@ -110,6 +112,8 @@ private slots:
 	void on_inspectorWidget_itemChanged(QTableWidgetItem *item);
 
 	void on_actionMapSettings_triggered();
+
+	void on_actionRegionController_triggered();
 
 	void on_actionPlayers_settings_triggered();
 
@@ -191,12 +195,16 @@ private:
 	void parseCommandLine(ExtractionOptions & extractionOptions);
 
 	void updateRecentMenu(const QString & filenameSelect);
+	void refreshSubregionButtons();
 
 private:
 	Ui::MainWindow * ui;
 	ObjectBrowserProxyModel * objectBrowser = nullptr;
 	QGraphicsScene * scenePreview;
 	MapSettings * mapSettings = nullptr;
+	QAction * regionControllerAction = nullptr;
+	QAction * subregionLayerAction = nullptr;
+	QVBoxLayout * subregionLayout = nullptr;
 
 	QList<QComboBox*> levelComboBoxes;
 	

@@ -343,6 +343,8 @@ void ApplyOnServerNetPackVisitor::visitLobbySetTurnTime(LobbySetTurnTime & pack)
 void ApplyOnServerNetPackVisitor::visitLobbySetExtraOptions(LobbySetExtraOptions & pack)
 {
 	srv.si->extraOptionsInfo = pack.extraOptionsInfo;
+	if(srv.si->extraOptionsInfo.weeklySimturns && !srv.canEnableWeeklySimturns())
+		srv.si->extraOptionsInfo.weeklySimturns = false;
 	result = true;
 }
 

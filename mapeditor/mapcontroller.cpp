@@ -341,6 +341,49 @@ void MapController::commitRoadOrRiverChange(int level, ui8 type, bool isRoad)
 	main->mapChanged();
 }
 
+void MapController::commitSubregionChange(int level, int subregionId)
+{
+	std::vector<int3> selection(_scenes[level]->selectionTerrainView.selection().begin(),
+						_scenes[level]->selectionTerrainView.selection().end());
+	if(selection.empty())
+		return;
+
+	auto target = std::find_if(_map->strategicRegionMap.subregions.begin(), _map->strategicRegionMap.subregions.end(), [subregionId](const Subregion & subregion)
+	{
+		return subregion.id == subregionId;
+	});
+	if(target == _map->strategicRegionMap.subregions.end())
+		return;
+
+	std::set<int3> selectedTiles(selection.begin(), selection.end());
+	for(auto & subregion : _map->strategicRegionMap.subregions)
+	{
+		subregion.tiles.erase(std::remove_if(subregion.tiles.begin(), subregion.tiles.end(), [&selectedTiles](const int3 & tile)
+		{
+			return selectedTiles.count(tile) > 0;
+		}), subregion.tiles.end());
+	}
+
+	target = std::find_if(_map->strategicRegionMap.subregions.begin(), _map->strategicRegionMap.subregions.end(), [subregionId](const Subregion & subregion)
+	{
+		return subregion.id == subregionId;
+	});
+	if(target != _map->strategicRegionMap.subregions.end())
+		target->tiles.insert(target->tiles.end(), selection.begin(), selection.end());
+
+	_scenes[level]->selectionTerrainView.clear();
+	_scenes[level]->subregionView.redrawSubregions(selection);
+	main->mapChanged();
+}
+
+void MapController::setSubregionLayerVisible(bool visible)
+{
+	if(!_map)
+		return;
+
+	for(int i = 0; i < _map->levels(); i++)
+		_scenes[i]->subregionView.show(visible);
+}
 void MapController::commitObjectErase(int level)
 {
 	auto selectedObjects = _scenes[level]->selectionObjectsView.getSelection();

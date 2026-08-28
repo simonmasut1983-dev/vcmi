@@ -847,6 +847,7 @@
 	"vcmi.lobby.room.state.public": "Public",
 	"vcmi.lobby.room.type": "Room Type",
 	"vcmi.lobby.scenarioName": "Scenario name",
+	"vcmi.lobby.start.unassignedConnectedClient": "A connected client has no assigned player. Please assign each connected client to a human player before starting the game.",
 	"vcmi.lobby.sortDate": "Sorts maps by change date",
 	"vcmi.lobby.templatesSelect.help": "Search and select template",
 	"vcmi.lobby.templatesSelect.hover": "Templates",
@@ -928,6 +929,11 @@
 	"vcmi.optionsTab.turnTime.unlimited": "Unlimited turn time",
 	"vcmi.optionsTab.unlimitedReplay.help": "{Unlimited battle replay}\nNo limit of replaying battles.",
 	"vcmi.optionsTab.unlimitedReplay.hover": "Unlimited battle replay",
+	"vcmi.optionsTab.weeklySimturns.help": "{Weekly simultaneous turns}\nPlayers advance independently during a protected week before synchronizing.",
+	"vcmi.optionsTab.weeklySimturns.hover": "Weekly simultaneous turns",
+	"vcmi.optionsTab.weeklySimturns.twoPlayersOnly": "Weekly simultaneous turns mode is configured for two players.",
+	"vcmi.optionsTab.weeklySimturns.twoConnectedPlayersRequired": "Weekly simultaneous turns requires two human players assigned to two different connected clients.",
+	"vcmi.optionsTab.weeklySimturns.requiredSpellBans": "Weekly simultaneous turns requires Dimension Door, Fly, and Water Walk to be banned on this map.",
 	"vcmi.otherOptions.availableCreaturesAsDwellingLabel.help": "{Show Available Creatures}\n\nShow the number of creatures available to purchase instead of their growth in town summary (bottom-left corner of town screen).",
 	"vcmi.otherOptions.availableCreaturesAsDwellingLabel.hover": "Show Available Creatures",
 	"vcmi.otherOptions.compactTownCreatureInfo.help": "{Compact Creature Info}\n\nShow smaller information for town creatures in town summary (bottom-left corner of town screen).",
@@ -1096,3 +1102,4 @@
 	"vcmi.tutorialWindow.decription.RightClick": "Touch and hold the element on which you want to right-click. Touch the free area to close.",
 	"vcmi.tutorialWindow.title": "Touchscreen Introduction"
 }
+

@@ -363,6 +363,11 @@ void NewTurn::visitTyped(ICPackVisitor & visitor)
 	visitor.visitNewTurn(*this);
 }
 
+void WeeklySimturnsLocalDay::visitTyped(ICPackVisitor & visitor)
+{
+	visitor.visitWeeklySimturnsLocalDay(*this);
+}
+
 void InfoWindow::visitTyped(ICPackVisitor & visitor)
 {
 	visitor.visitInfoWindow(*this);

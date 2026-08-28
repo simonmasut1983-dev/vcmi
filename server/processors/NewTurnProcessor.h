@@ -29,10 +29,10 @@ class NewTurnProcessor : boost::noncopyable
 {
 	CGameHandler * gameHandler;
 
-	std::vector<SetMana> updateHeroesManaPoints();
-	std::vector<SetMovePoints> updateHeroesMovementPoints();
+	std::vector<SetMana> updateHeroesManaPoints(std::optional<PlayerColor> player = std::nullopt);
+	std::vector<SetMovePoints> updateHeroesMovementPoints(std::optional<PlayerColor> player = std::nullopt);
 
-	ResourceSet generatePlayerIncome(PlayerColor playerID, bool newWeek);
+	ResourceSet generatePlayerIncome(PlayerColor playerID, bool includeDailyIncome, bool includeWeeklyIncome);
 	SetAvailableCreatures generateTownGrowth(const CGTownInstance * town, EWeekType weekType, CreatureID creatureWeek, bool firstDay, int additionalGrowth);
 	RumorState pickNewRumor();
 	InfoWindow createInfoWindow(EWeekType weekType, CreatureID creatureWeek, bool newMonth, int additionalGrowth);
@@ -48,6 +48,7 @@ public:
 	NewTurnProcessor(CGameHandler * gameHandler);
 
 	void onNewTurn();
+	void onWeeklySimturnsLocalDay(PlayerColor player);
 	void onPlayerTurnStarted(PlayerColor color);
 	void onPlayerTurnEnded(PlayerColor color);
 };

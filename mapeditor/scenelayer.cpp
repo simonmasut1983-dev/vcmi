@@ -499,7 +499,56 @@ void SelectionTerrainLayer::onSelection()
 	 Q_EMIT selectionMade(!area.empty());
 }
 
+SubregionLayer::SubregionLayer(MapSceneBase * s): AbstractViewportLayer(s)
+{
+}
 
+QGraphicsItem * SubregionLayer::draw(const QRectF & section)
+{
+	int offsetX = toInt(section.x());
+	int offsetY = toInt(section.y());
+	QPixmap pixmap(toInt(section.width()), toInt(section.height()));
+	pixmap.fill(Qt::transparent);
+
+	if(!isShown)
+	{
+		QGraphicsPixmapItem * result = scene->addPixmap(pixmap);
+		result->setPos(section.x(), section.y());
+		return result;
+	}
+
+	QPainter painter(&pixmap);
+	painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+	painter.setPen(Qt::NoPen);
+
+	if(map)
+	{
+		for(const auto & subregion : map->strategicRegionMap.subregions)
+		{
+			QColor color(QString::fromStdString(subregion.color));
+			if(!color.isValid())
+				color = QColor(255, 255, 255);
+			color.setAlpha(80);
+
+			for(const auto & tile : subregion.tiles)
+			{
+				if(tile.z != scene->level)
+					continue;
+				if(section.contains(tile.x * tileSize, tile.y * tileSize))
+					painter.fillRect(tile.x * tileSize - offsetX, tile.y * tileSize - offsetY, 32, 32, color);
+			}
+		}
+	}
+
+	QGraphicsPixmapItem * result = scene->addPixmap(pixmap);
+	result->setPos(section.x(), section.y());
+	return result;
+}
+
+void SubregionLayer::redrawSubregions(const std::vector<int3> & tiles)
+{
+	redraw(tiles);
+}
 TerrainLayer::TerrainLayer(MapSceneBase * s): AbstractViewportLayer(s)
 {
 }

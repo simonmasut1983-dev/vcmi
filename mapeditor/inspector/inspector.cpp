@@ -78,6 +78,7 @@ void Initializer::initialize(CGCreature * o)
 	if(!o) return;
 
 	o->initialCharacter = CGCreature::Character::HOSTILE;
+	o->removeAfterSimturnsPhase = true;
 	if(!o->hasStackAtSlot(SlotID(0)))
 		o->putStack(SlotID(0), std::make_unique<CStackInstance>(o->cb, CreatureID(o->subID), 1, false));
 }
@@ -440,6 +441,7 @@ void Inspector::updateProperties(CGCreature * o)
 	}
 	addProperty(QObject::tr("Never flees"), o->neverFlees, false);
 	addProperty(QObject::tr("Not growing"), o->notGrowingTeam, false);
+	addProperty(QObject::tr("Remove after simturns phase"), o->removeAfterSimturnsPhase, false);
 	addProperty(QObject::tr("Artifact reward"), o->gainedArtifact); //TODO: implement in setProperty
 	addProperty(QObject::tr("Army"), PropertyEditorPlaceholder(), true);
 	addProperty(QObject::tr("Amount"), o->stacks[SlotID(0)]->getCount(), false);
@@ -781,6 +783,8 @@ void Inspector::setProperty(CGCreature * o, const QString & key, const QVariant 
 		o->neverFlees = value.toBool();
 	if(key == QObject::tr("Not growing"))
 		o->notGrowingTeam = value.toBool();
+	if(key == QObject::tr("Remove after simturns phase"))
+		o->removeAfterSimturnsPhase = value.toBool();
 	if(key == QObject::tr("Amount"))
 		o->stacks[SlotID(0)]->setCount(value.toString().toInt());
 }

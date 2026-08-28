@@ -191,7 +191,7 @@ void NewTurnProcessor::onPlayerTurnEnded(PlayerColor which)
 		gameHandler->heroPool->onNewWeek(which);
 }
 
-ResourceSet NewTurnProcessor::generatePlayerIncome(PlayerColor playerID, bool newWeek)
+ResourceSet NewTurnProcessor::generatePlayerIncome(PlayerColor playerID, bool includeDailyIncome, bool includeWeeklyIncome)
 {
 	const auto & playerSettings = gameHandler->gameInfo().getPlayerSettings(playerID);
 	const PlayerState & state = gameHandler->gameState().players.at(playerID);
@@ -199,14 +199,14 @@ ResourceSet NewTurnProcessor::generatePlayerIncome(PlayerColor playerID, bool ne
 
 	for (const auto & town : state.getTowns())
 	{
-		if (newWeek && town->hasBuilt(BuildingSubID::TREASURY))
+		if (includeWeeklyIncome && town->hasBuilt(BuildingSubID::TREASURY))
 		{
 			//give 10% of starting gold
 			income[EGameResID::GOLD] += state.resources[EGameResID::GOLD] / 10;
 		}
 
 		//give resources if there's a Mystic Pond
-		if (newWeek && town->hasBuilt(BuildingSubID::MYSTIC_POND))
+		if (includeWeeklyIncome && town->hasBuilt(BuildingSubID::MYSTIC_POND))
 		{
 			static constexpr std::array rareResources = {
 				GameResID::MERCURY,
@@ -225,13 +225,16 @@ ResourceSet NewTurnProcessor::generatePlayerIncome(PlayerColor playerID, bool ne
 		}
 	}
 
-	for(auto & k : LIBRARY->resourceTypeHandler->getAllObjects())
+	if(includeDailyIncome)
 	{
-		income += state.valOfBonuses(BonusType::RESOURCES_CONSTANT_BOOST, BonusSubtypeID(k));
-		income += state.valOfBonuses(BonusType::RESOURCES_TOWN_MULTIPLYING_BOOST, BonusSubtypeID(k)) * state.getTowns().size();
+		for(auto & k : LIBRARY->resourceTypeHandler->getAllObjects())
+		{
+			income += state.valOfBonuses(BonusType::RESOURCES_CONSTANT_BOOST, BonusSubtypeID(k));
+			income += state.valOfBonuses(BonusType::RESOURCES_TOWN_MULTIPLYING_BOOST, BonusSubtypeID(k)) * state.getTowns().size();
+		}
 	}
 
-	if(newWeek) //weekly crystal generation if 1 or more crystal dragons in any hero army or town garrison
+	if(includeWeeklyIncome) //weekly crystal generation if 1 or more crystal dragons in any hero army or town garrison
 	{
 		bool hasCrystalGenCreature = false;
 		for (const auto & hero : state.getHeroes())
@@ -251,10 +254,11 @@ ResourceSet NewTurnProcessor::generatePlayerIncome(PlayerColor playerID, bool ne
 	TResources incomeHandicapped = income;
 	incomeHandicapped.applyHandicap(playerSettings->handicap.percentIncome);
 
-	for (const auto * obj :	state.getOwnedObjects())
-		incomeHandicapped += obj->asOwnable()->dailyIncome();
+	if(includeDailyIncome)
+		for (const auto * obj :	state.getOwnedObjects())
+			incomeHandicapped += obj->asOwnable()->dailyIncome();
 
-	if (!state.isHuman())
+	if (includeDailyIncome && !state.isHuman())
 	{
 		// Initialize bonuses for different resources
 		int difficultyIndex = gameHandler->gameState().getStartInfo()->difficulty;
@@ -571,12 +575,15 @@ std::tuple<EWeekType, CreatureID, int> NewTurnProcessor::pickWeekType(bool newMo
 	}
 }
 
-std::vector<SetMana> NewTurnProcessor::updateHeroesManaPoints()
+std::vector<SetMana> NewTurnProcessor::updateHeroesManaPoints(std::optional<PlayerColor> player)
 {
 	std::vector<SetMana> result;
 
 	for (const auto & elem : gameHandler->gameState().players)
 	{
+		if(player && elem.first != *player)
+			continue;
+
 		for (const CGHeroInstance *h : elem.second.getHeroes())
 		{
 			int32_t newMana = h->getManaNewTurn();
@@ -588,12 +595,15 @@ std::vector<SetMana> NewTurnProcessor::updateHeroesManaPoints()
 	return result;
 }
 
-std::vector<SetMovePoints> NewTurnProcessor::updateHeroesMovementPoints()
+std::vector<SetMovePoints> NewTurnProcessor::updateHeroesMovementPoints(std::optional<PlayerColor> player)
 {
 	std::vector<SetMovePoints> result;
 
 	for (const auto & elem : gameHandler->gameState().players)
 	{
+		if(player && elem.first != *player)
+			continue;
+
 		for (const CGHeroInstance *h : elem.second.getHeroes())
 		{
 			auto ti = h->getTurnInfo(1);
@@ -667,13 +677,14 @@ NewTurn NewTurnProcessor::generateNewTurnPack()
 	bool firstTurn = !gameHandler->gameInfo().getDate(Date::DAY);
 	bool newWeek = gameHandler->gameInfo().getDate(Date::DAY_OF_WEEK) == daysPerWeek; //day numbers are confusing, as day was not yet switched
 	bool newMonth = gameHandler->gameInfo().getDate(Date::DAY_OF_MONTH) == daysPerMonth;
+	bool weeklySimturns = gameHandler->gameInfo().getStartInfo()->extraOptionsInfo.weeklySimturns;
 
 	int additionalGrowth = 0;
 
 	if (!firstTurn)
 	{
 		for (const auto & player : gameHandler->gameState().players)
-			n.playerIncome[player.first] = generatePlayerIncome(player.first, newWeek);
+			n.playerIncome[player.first] = generatePlayerIncome(player.first, !weeklySimturns, newWeek);
 	}
 
 	if (newWeek && !firstTurn)
@@ -684,8 +695,12 @@ NewTurn NewTurnProcessor::generateNewTurnPack()
 		additionalGrowth = addGrowth;
 	}
 
-	n.heroesMana = updateHeroesManaPoints();
-	n.heroesMovement = updateHeroesMovementPoints();
+	if(firstTurn || !weeklySimturns)
+	{
+		n.heroesMana = updateHeroesManaPoints();
+		n.heroesMovement = updateHeroesMovementPoints();
+	}
+	n.resetTownDailyLimits = firstTurn || !weeklySimturns;
 
 	if (newWeek)
 	{
@@ -745,4 +760,18 @@ void NewTurnProcessor::onNewTurn()
 	}
 
 	logGlobal->trace("Info about turn %d has been sent!", n.day);
+}
+
+void NewTurnProcessor::onWeeklySimturnsLocalDay(PlayerColor player)
+{
+	WeeklySimturnsLocalDay pack;
+	pack.player = player;
+	pack.income = generatePlayerIncome(player, true, false);
+	pack.heroesMana = updateHeroesManaPoints(player);
+	pack.heroesMovement = updateHeroesMovementPoints(player);
+
+	for(const auto * town : gameHandler->gameState().getPlayerState(player)->getTowns())
+		pack.towns.push_back(town->id);
+
+	gameHandler->sendAndApply(pack);
 }

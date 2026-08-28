@@ -25,6 +25,7 @@ set(editor_SRCS
 		playerparams.cpp
 		scenelayer.cpp
 		mapcontroller.cpp
+	regioncontrollerdialog.cpp
 		validator.cpp
 		inspector/inspector.cpp
 		inspector/townbuildingswidget.cpp
@@ -92,6 +93,7 @@ set(editor_HEADERS
 		playerparams.h
 		scenelayer.h
 		mapcontroller.h
+	regioncontrollerdialog.h
 		validator.h
 		inspector/inspector.h
 		inspector/townbuildingswidget.h

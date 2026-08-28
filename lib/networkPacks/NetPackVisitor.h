@@ -89,6 +89,7 @@ public:
 	virtual void visitDisassembledArtifact(DisassembledArtifact & pack) {}
 	virtual void visitHeroVisit(HeroVisit & pack) {}
 	virtual void visitNewTurn(NewTurn & pack) {}
+	virtual void visitWeeklySimturnsLocalDay(WeeklySimturnsLocalDay & pack) {}
 	virtual void visitInfoWindow(InfoWindow & pack) {}
 	virtual void visitSetObjectProperty(SetObjectProperty & pack) {}
 	virtual void visitChangeObjectVisitors(ChangeObjectVisitors & pack) {}

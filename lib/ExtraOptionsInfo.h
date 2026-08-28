@@ -16,6 +16,7 @@ struct DLL_LINKAGE ExtraOptionsInfo
 {
 	bool cheatsAllowed = true;
 	bool unlimitedReplay = false;
+	bool weeklySimturns = false;
 
 	bool operator == (const ExtraOptionsInfo & other) const;
 
@@ -24,6 +25,10 @@ struct DLL_LINKAGE ExtraOptionsInfo
 	{
 		h & cheatsAllowed;
 		h & unlimitedReplay;
+		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS))
+			h & weeklySimturns;
+		else
+			weeklySimturns = false;
 	}
 };
 

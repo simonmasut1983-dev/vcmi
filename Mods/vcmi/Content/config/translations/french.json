@@ -1,4 +1,10 @@
 {
+	"vcmi.optionsTab.weeklySimturns.help": "{Tours simultanes hebdomadaires}\nLes joueurs avancent independamment pendant une semaine protegee avant de se synchroniser.",
+	"vcmi.optionsTab.weeklySimturns.hover": "Tours simultanes hebdomadaires",
+	"vcmi.optionsTab.weeklySimturns.twoPlayersOnly": "Le mode de tour simultane hebdomadaire est configure pour deux joueurs.",
+	"vcmi.optionsTab.weeklySimturns.twoConnectedPlayersRequired": "Le mode de tour simultane hebdomadaire necessite deux joueurs humains assignes a deux clients connectes differents.",
+	"vcmi.optionsTab.weeklySimturns.requiredSpellBans": "Le mode de tour simultane hebdomadaire necessite que Dimension Door, Fly et Water Walk soient bannis de la carte.",
+	"vcmi.lobby.start.unassignedConnectedClient": "Un client connecte n'a aucun joueur assigne. Assignez chaque client connecte a un joueur humain avant de lancer la partie.",
 	"core.bonus.ADDITIONAL_ATTACK.description": "{Double frappe}\nAttaque deux fois",
 	"core.bonus.ADDITIONAL_RETALIATION.description": "{Représailles supplémentaires}\nPeut riposter ${val} fois de plus",
 	"core.bonus.ATTACKS_ALL_ADJACENT.description": "{Attaque tout autour}\nAttaque tous les ennemis adjacents",
@@ -221,3 +227,4 @@
 	"vcmi.townHall.missingBase": "Le bâtiment de base %s doit être construit avant",
 	"vcmi.townHall.noCreaturesToRecruit": "Il n'y a aucune créature à recruter !"
 }
+

@@ -54,6 +54,8 @@ public:
 	
 	void commitTerrainChange(int level, const TerrainId & terrain);
 	void commitRoadOrRiverChange(int level, ui8 type, bool isRoad);
+	void commitSubregionChange(int level, int subregionId);
+	void setSubregionLayerVisible(bool visible);
 	void commitObjectErase(const CGObjectInstance* obj);
 	void commitObjectErase(int level);
 	void commitObstacleFill(int level);

@@ -2044,7 +2044,6 @@ bool CGameHandler::arrangeStacks(ObjectInstanceID id1, ObjectInstanceID id2, ui8
 			return false;
 		}
 
-
 		if (vstd::contains(S2.stacks,p2))	 //dest. slot not free - it must be "rebalancing"...
 		{
 			int total = s1->getStackCount(p1) + s2->getStackCount(p2);
@@ -3284,7 +3283,6 @@ bool CGameHandler::transformInUndead(const IMarket *market, const CGHeroInstance
 	if (!army->hasStackAtSlot(slot))
 		COMPLAIN_RET("Army doesn't have any creature in that slot!");
 
-
 	const CStackInstance &s = army->getStack(slot);
 
 	//resulting creature - bone dragons or skeletons
@@ -4386,7 +4384,6 @@ vstd::RNG & CGameHandler::getRandomGenerator()
 //	return serverScripts.get();
 //}
 //#endif
-
 
 std::shared_ptr<CGObjectInstance> CGameHandler::createNewObject(const int3 & visitablePosition, MapObjectID objectID, MapObjectSubID subID)
 {

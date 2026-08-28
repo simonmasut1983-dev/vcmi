@@ -757,6 +757,7 @@ void CGCreature::serializeJsonOptions(JsonSerializeFormat & handler)
 
 	handler.serializeBool("noGrowing", notGrowingTeam);
 	handler.serializeBool("neverFlees", neverFlees);
+	handler.serializeBool("removeAfterSimturnsPhase", removeAfterSimturnsPhase, true);
 	handler.serializeStruct("rewardMessage", message);
 }
 

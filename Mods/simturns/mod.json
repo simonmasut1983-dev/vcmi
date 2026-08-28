@@ -1,0 +1,11 @@
+﻿{
+	"name" : "Simturns",
+	"description" : "Prototype mod for weekly simultaneous turns and future map objects controlling protected passages between player kingdoms.",
+	"version" : "0.1",
+	"author" : "VCMI prototype",
+	"modType" : "Mechanics",
+
+	"objects" : [
+		"config/objects/towerDarkEye"
+	]
+}
