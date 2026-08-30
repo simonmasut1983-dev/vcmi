@@ -1244,6 +1244,7 @@ struct DLL_LINKAGE WeeklySimturnsLocalDay : public CPackForClient
 	std::vector<SetAvailableCreatures> availableCreatures;
 	std::vector<ObjectInstanceID> towns;
 	std::map<PlayerColor, int> weeklySimturnsPlayerDays;
+	std::optional<InfoWindow> newWeekNotification;
 
 	void visitTyped(ICPackVisitor & visitor) override;
 
@@ -1256,7 +1257,10 @@ struct DLL_LINKAGE WeeklySimturnsLocalDay : public CPackForClient
 		h & availableCreatures;
 		h & towns;
 		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS_LOCAL_DAYS_UI))
+		{
 			h & weeklySimturnsPlayerDays;
+			h & newWeekNotification;
+		}
 	}
 };
 

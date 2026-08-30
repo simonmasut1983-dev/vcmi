@@ -330,6 +330,14 @@ void TurnOrderProcessor::rebuildObjectRegionTable()
 	logGlobal->info("Weekly simturns: built runtime object region table: %d objects assigned, %d unassigned, %d regions, %d subregions, %d painted tiles.", assignedObjects, unassignedObjects, static_cast<int>(regionTerritoryRoles.size()), static_cast<int>(strategicMap.subregions.size()), paintedTiles);
 	logGlobal->info("Weekly simturns: object territory assignment: player1=%d player2=%d middle=%d neutral=%d water=%d.", assignedByRole[TerritoryRole::PLAYER1_REALM], assignedByRole[TerritoryRole::PLAYER2_REALM], assignedByRole[TerritoryRole::MIDDLE_TERRITORY], assignedByRole[TerritoryRole::NEUTRAL], assignedByRole[TerritoryRole::WATER]);
 }
+
+void TurnOrderProcessor::pregenerateWeeklySimturnsWeekDecisions()
+{
+	const int daysPerWeek = LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_DAYS_PER_WEEK);
+	const int phaseEndDay = simturnsTurnsMinLimit();
+	for(int weekStartDay = daysPerWeek + 1; weekStartDay <= phaseEndDay; weekStartDay += daysPerWeek)
+		getOrCreateWeeklySimturnsWeekInfo(weekStartDay);
+}
 TurnOrderProcessor::WeeklySimturnsWeekInfo TurnOrderProcessor::getOrCreateWeeklySimturnsWeekInfo(int localDay)
 {
 	const int daysPerWeek = LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_DAYS_PER_WEEK);
@@ -497,7 +505,7 @@ void TurnOrderProcessor::doSynchronizeWeeklySimturnsPhaseEnd()
 	logGlobal->info("Weekly simturns: all players reached desynchronized phase end. Advancing global day to %d.", nextSynchronizedDay);
 
 	while(gameHandler->gameInfo().getDate(Date::DAY) + 1 < nextSynchronizedDay)
-		gameHandler->onNewTurn();
+		gameHandler->onNewTurn(true);
 
 	gameHandler->onNewTurn();
 
@@ -694,6 +702,7 @@ void TurnOrderProcessor::onGameStarted()
 	if(weeklySimturnsEnabled() && gameHandler->gameInfo().getDate(Date::DAY) < simturnsTurnsMinLimit())
 	{
 		rebuildObjectRegionTable();
+		pregenerateWeeklySimturnsWeekDecisions();
 		for(const auto & player : gameHandler->gameState().players)
 		{
 			if(!player.first.isValidPlayer() || player.second.status != EPlayerStatus::INGAME)

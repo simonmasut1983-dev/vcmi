@@ -103,6 +103,7 @@ private:
 	PlayerColor playerForTerritoryRole(TerritoryRole role) const;
 	bool allWeeklySimturnsPlayersAwaitPhaseEnd() const;
 	bool weeklySimturnsPhaseEndsBetween(int startDay, int endDay) const;
+	void pregenerateWeeklySimturnsWeekDecisions();
 	void removeWeeklySimturnsPhaseCreatures();
 
 	void doStartNewDay();

@@ -49,6 +49,10 @@
 #include "../lib/GameConstants.h"
 #include "../lib/CPlayerState.h"
 
+namespace
+{
+std::map<PlayerColor, InfoWindow> pendingWeeklySimturnsNewWeekNotifications;
+}
 // TODO: as Tow suggested these template should all be part of CClient
 // This will require rework spectator interface properly though
 
@@ -361,6 +365,11 @@ void ApplyClientNetPackVisitor::visitNewTurn(NewTurn & pack)
 void ApplyClientNetPackVisitor::visitWeeklySimturnsLocalDay(WeeklySimturnsLocalDay & pack)
 {
 	callInterfaceIfPresent(cl, pack.player, &CGameInterface::invalidatePaths);
+
+	if(pack.newWeekNotification)
+	{
+		pendingWeeklySimturnsNewWeekNotifications[pack.player] = *pack.newWeekNotification;
+	}
 }
 
 void ApplyClientNetPackVisitor::visitGiveBonus(GiveBonus & pack)
@@ -932,6 +941,17 @@ void ApplyClientNetPackVisitor::visitPlayerStartsTurn(PlayerStartsTurn & pack)
 
 	callAllInterfaces(cl, &IGameEventsReceiver::playerStartsTurn, pack.player);
 	callOnlyThatInterface(cl, pack.player, &CGameInterface::yourTurn, pack.queryID);
+
+	auto pendingNotification = pendingWeeklySimturnsNewWeekNotifications.find(pack.player);
+	if(pendingNotification != pendingWeeklySimturnsNewWeekNotifications.end())
+	{
+		const auto & newWeek = pendingNotification->second;
+		std::string str = newWeek.text.toString();
+		bool shown = callOnlyThatInterface(cl, pack.player, &CGameInterface::showInfoDialog, newWeek.type, str, newWeek.components, (soundBase::soundID)newWeek.soundID);
+		if(!shown && GAME->interface() && GAME->interface()->playerID == pack.player)
+			GAME->interface()->showInfoDialog(str, std::vector<std::shared_ptr<CComponent>>(), newWeek.soundID);
+		pendingWeeklySimturnsNewWeekNotifications.erase(pendingNotification);
+	}
 }
 
 void ApplyClientNetPackVisitor::visitPlayerEndsTurn(PlayerEndsTurn & pack)

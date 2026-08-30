@@ -668,7 +668,7 @@ InfoWindow NewTurnProcessor::createInfoWindow(EWeekType weekType, CreatureID cre
 	return iw;
 }
 
-NewTurn NewTurnProcessor::generateNewTurnPack()
+NewTurn NewTurnProcessor::generateNewTurnPack(bool suppressNewWeekNotification)
 {
 	NewTurn n;
 	n.specialWeek = EWeekType::FIRST_WEEK;
@@ -730,16 +730,16 @@ NewTurn NewTurnProcessor::generateNewTurnPack()
 		n.newRumor = pickNewRumor();
 
 		//new week info popup
-		if (n.specialWeek != EWeekType::FIRST_WEEK)
+		if (!suppressNewWeekNotification && n.specialWeek != EWeekType::FIRST_WEEK)
 			n.newWeekNotification = createInfoWindow(n.specialWeek, n.creatureid, newMonth, additionalGrowth);
 	}
 
 	return n;
 }
 
-void NewTurnProcessor::onNewTurn()
+void NewTurnProcessor::onNewTurn(bool suppressNewWeekNotification)
 {
-	NewTurn n = generateNewTurnPack();
+	NewTurn n = generateNewTurnPack(suppressNewWeekNotification);
 
 	int daysPerWeek = LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_DAYS_PER_WEEK);
 	int daysPerMonth = LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_WEEKS_PER_MONTH) * daysPerWeek;
@@ -817,11 +817,16 @@ void NewTurnProcessor::onWeeklySimturnsLocalNewWeek(PlayerColor player, int loca
 {
 	gameHandler->heroPool->onNewWeek(player);
 
-	for(const auto * town : gameHandler->gameState().getPlayerState(player)->getTowns())
+	const auto weekInfo = gameHandler->turnOrder->getOrCreateWeeklySimturnsWeekInfo(localDay);
+
+	if(weekInfo.weekType != EWeekType::FIRST_WEEK)
 	{
-		auto weekInfo = gameHandler->turnOrder->getOrCreateWeeklySimturnsWeekInfo(localDay);
-		pack.availableCreatures.push_back(generateTownGrowth(town, weekInfo.weekType, weekInfo.creatureId, false, weekInfo.additionalGrowth));
+		pack.newWeekNotification = createInfoWindow(weekInfo.weekType, weekInfo.creatureId, false, weekInfo.additionalGrowth);
+		pack.newWeekNotification->player = player;
 	}
+
+	for(const auto * town : gameHandler->gameState().getPlayerState(player)->getTowns())
+		pack.availableCreatures.push_back(generateTownGrowth(town, weekInfo.weekType, weekInfo.creatureId, false, weekInfo.additionalGrowth));
 }
 
 void NewTurnProcessor::onWeeklySimturnsLocalDay(PlayerColor player)
@@ -839,12 +844,13 @@ void NewTurnProcessor::onWeeklySimturnsLocalDay(PlayerColor player)
 	processWeeklySimturnsLocalMapObjects(player);
 
 	auto localPlayerDay = pack.weeklySimturnsPlayerDays.find(player);
-	if(localPlayerDay != pack.weeklySimturnsPlayerDays.end()
-		&& localPlayerDay->second > 1
-		&& CGameState::getDate(localPlayerDay->second, Date::DAY_OF_WEEK) == 1)
-	{
-		onWeeklySimturnsLocalNewWeek(player, localPlayerDay->second, pack);
-	}
+	const bool hasLocalDay = localPlayerDay != pack.weeklySimturnsPlayerDays.end();
+	const int localDay = hasLocalDay ? localPlayerDay->second : -1;
+	const int dayOfWeek = hasLocalDay ? CGameState::getDate(localDay, Date::DAY_OF_WEEK) : -1;
+	const bool localNewWeek = hasLocalDay && localDay > 1 && dayOfWeek == 1;
+
+	if(localNewWeek)
+		onWeeklySimturnsLocalNewWeek(player, localDay, pack);
 
 	gameHandler->sendAndApply(pack);
 }

@@ -248,7 +248,7 @@ public:
 	void onPlayerTurnStarted(PlayerColor which);
 	void onPlayerTurnEnded(PlayerColor which);
 	void onAdvInterfaceReady(PlayerColor player);
-	void onNewTurn();
+	void onNewTurn(bool suppressNewWeekNotification = false);
 	void addStatistics(StatisticDataSet &stat) const;
 
 	bool complain(const std::string &problem); //sends message to all clients, prints on the logs and return true

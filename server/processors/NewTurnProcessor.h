@@ -41,7 +41,7 @@ class NewTurnProcessor : boost::noncopyable
 	void processWeeklySimturnsLocalMapObjects(PlayerColor player);
 	void onWeeklySimturnsLocalNewWeek(PlayerColor player, int localDay, WeeklySimturnsLocalDay & pack);
 
-	NewTurn generateNewTurnPack();
+	NewTurn generateNewTurnPack(bool suppressNewWeekNotification = false);
 	void handleTimeEvents(PlayerColor player);
 	void handleTownEvents(const CGTownInstance *town);
 
@@ -52,7 +52,7 @@ public:
 
 	std::tuple<EWeekType, CreatureID, int> pickWeekType(bool newMonth);
 
-	void onNewTurn();
+	void onNewTurn(bool suppressNewWeekNotification = false);
 	void onWeeklySimturnsLocalDay(PlayerColor player);
 	void onPlayerTurnStarted(PlayerColor color);
 	void onPlayerTurnEnded(PlayerColor color);

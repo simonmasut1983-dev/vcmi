@@ -675,7 +675,7 @@ void CGameHandler::addStatistics(StatisticDataSet &stat) const
 	}
 }
 
-void CGameHandler::onNewTurn()
+void CGameHandler::onNewTurn(bool suppressNewWeekNotification)
 {
 	logGlobal->trace("Turn %d", gameState().day+1);
 
@@ -756,7 +756,7 @@ void CGameHandler::onNewTurn()
 		sendAndApply(saa);
 	}
 
-	newTurnProcessor->onNewTurn();
+	newTurnProcessor->onNewTurn(suppressNewWeekNotification);
 
 	if (!firstTurn)
 		checkVictoryLossConditionsForAll(); // check for map turn limit
