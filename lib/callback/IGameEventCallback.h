@@ -60,6 +60,8 @@ public:
 	virtual void setRewardableObjectConfiguration(ObjectInstanceID townInstanceID, BuildingID buildingID, const Rewardable::Configuration & configuration) = 0;
 	virtual void setObjPropertyID(ObjectInstanceID objid, ObjProperty prop, ObjPropertyID identifier) = 0;
 
+	virtual int getLocalDateForObject(ObjectInstanceID objectId, Date mode = Date::DAY) const = 0;
+
 	virtual void showInfoDialog(InfoWindow * iw) = 0;
 
 	virtual void changeSpells(const CGHeroInstance * hero, bool give, const std::set<SpellID> &spells)=0;

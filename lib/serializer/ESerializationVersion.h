@@ -65,9 +65,11 @@ enum class ESerializationVersion : int32_t
 	WEEKLY_SIMTURNS, // support weekly simultaneous turns option
 	WEEKLY_SIMTURNS_TURN_ORDER, // support weekly simultaneous turns state
 	WEEKLY_SIMTURNS_CREATURE_PHASE_REMOVAL, // support removing neutral stacks at end of weekly simultaneous turns phase
+	WEEKLY_SIMTURNS_WEEK_DECISIONS, // support shared server-side special week decisions for weekly simultaneous turns
+	WEEKLY_SIMTURNS_LOCAL_DAYS_UI, // support client display of weekly simultaneous turns local clocks
 
 	RELEASE_170 = HOTA_MAP_STACK_COUNT,
-	CURRENT = WEEKLY_SIMTURNS_CREATURE_PHASE_REMOVAL,
+	CURRENT = WEEKLY_SIMTURNS_LOCAL_DAYS_UI,
 };
 
 static_assert(ESerializationVersion::MINIMAL <= ESerializationVersion::CURRENT, "Invalid serialization version definition!");

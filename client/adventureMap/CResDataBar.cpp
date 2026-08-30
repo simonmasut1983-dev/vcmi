@@ -23,6 +23,7 @@
 
 #include "../../lib/CConfigHandler.h"
 #include "../../lib/CPlayerState.h"
+#include "../../lib/gameState/CGameState.h"
 #include "../../lib/callback/CCallback.h"
 #include "../../lib/texts/CGeneralTextHandler.h"
 #include "../../lib/ResourceSet.h"
@@ -68,6 +69,31 @@ void CResDataBar::setResourcePosition(const GameResID & resource, const Point & 
 
 std::string CResDataBar::buildDateString()
 {
+	const auto & localDays = static_cast<const IGameInfoCallback *>(GAME->interface()->cb.get())->gameState().weeklySimturnsPlayerDays;
+	if(!localDays.empty())
+	{
+		std::string localClocks;
+		for(PlayerColor player : { PlayerColor(0), PlayerColor(1) })
+		{
+			auto localDay = localDays.find(player);
+			if(localDay == localDays.end())
+				continue;
+
+			if(!localClocks.empty())
+				localClocks += " | ";
+
+			auto localClock = boost::format("P%d: M%d W%d D%d")
+				% (player.getNum() + 1)
+				% CGameState::getDate(localDay->second, Date::MONTH)
+				% CGameState::getDate(localDay->second, Date::WEEK)
+				% CGameState::getDate(localDay->second, Date::DAY_OF_WEEK);
+			localClocks += boost::str(localClock);
+		}
+
+		if(!localClocks.empty())
+			return localClocks;
+	}
+
 	std::string pattern = "%s: %d, %s: %d, %s: %d";
 
 	auto formatted = boost::format(pattern)

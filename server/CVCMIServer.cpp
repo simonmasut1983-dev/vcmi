@@ -22,6 +22,7 @@
 #include "../lib/entities/hero/CHeroClass.h"
 #include "../lib/entities/ResourceTypeHandler.h"
 #include "../lib/gameState/CGameState.h"
+#include "../lib/json/JsonUtils.h"
 #include "../lib/mapping/CMapInfo.h"
 #include "../lib/mapping/CMapHeader.h"
 #include "../lib/mapping/CMap.h"
@@ -257,6 +258,25 @@ void CVCMIServer::prepareToRestart()
 	gh = nullptr;
 }
 
+void CVCMIServer::applyWeeklySimturnsModConfig()
+{
+	if(!si || !si->extraOptionsInfo.weeklySimturns)
+		return;
+
+	if(si->mode == EStartMode::LOAD_GAME)
+		return;
+
+	const JsonNode config = JsonUtils::assembleFromFiles("config/simturns.json");
+	const JsonNode & daysNode = config["desynchronizedDays"];
+	if(!daysNode.isNumber())
+		return;
+
+	const int desynchronizedDays = std::max(0, static_cast<int>(daysNode.Integer()));
+	si->simturnsInfo.requiredTurns = desynchronizedDays;
+	si->simturnsInfo.optionalTurns = std::max(si->simturnsInfo.optionalTurns, desynchronizedDays);
+
+	logNetwork->info("Weekly simturns: using %d desynchronized days from config/simturns.json.", desynchronizedDays);
+}
 bool CVCMIServer::prepareToStartGame()
 {
 	if(!canStartAssignedClients())
@@ -270,6 +290,8 @@ bool CVCMIServer::prepareToStartGame()
 		announceMessage(LIBRARY->generaltexth->translate("vcmi.optionsTab.weeklySimturns.twoConnectedPlayersRequired"));
 		return false;
 	}
+
+	applyWeeklySimturnsModConfig();
 
 	Load::ProgressAccumulator progressTracking;
 	Load::Progress current(1);

@@ -1080,6 +1080,7 @@ void GameStatePackVisitor::visitSetAvailableArtifacts(SetAvailableArtifacts & pa
 
 void GameStatePackVisitor::visitNewTurn(NewTurn & pack)
 {
+	gs.weeklySimturnsPlayerDays = pack.weeklySimturnsPlayerDays;
 	gs.day = pack.day;
 
 	// Update bonuses before doing anything else so hero don't get more MP than needed
@@ -1121,6 +1122,7 @@ void GameStatePackVisitor::visitNewTurn(NewTurn & pack)
 
 void GameStatePackVisitor::visitWeeklySimturnsLocalDay(WeeklySimturnsLocalDay & pack)
 {
+	gs.weeklySimturnsPlayerDays = pack.weeklySimturnsPlayerDays;
 	auto * player = gs.getPlayerState(pack.player);
 	player->resources += pack.income;
 	player->resources.amin(GameConstants::PLAYER_RESOURCES_CAP);
@@ -1130,6 +1132,9 @@ void GameStatePackVisitor::visitWeeklySimturnsLocalDay(WeeklySimturnsLocalDay & 
 
 	for(auto & movePack : pack.heroesMovement)
 		movePack.visit(*this);
+
+	for(auto & creatureSet : pack.availableCreatures)
+		creatureSet.visit(*this);
 
 	for(const auto & townID : pack.towns)
 	{

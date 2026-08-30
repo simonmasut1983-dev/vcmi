@@ -101,6 +101,7 @@ public:
 
 	IGameInfoCallback & gameInfo();
 	const CGameState & gameState() const { return *gs; }
+	int getLocalDateForObject(ObjectInstanceID objectId, Date mode = Date::DAY) const override;
 
 	// Helpers to create new object of specified type
 

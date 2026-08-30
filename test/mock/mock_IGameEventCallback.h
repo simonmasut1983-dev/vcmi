@@ -29,6 +29,8 @@ public:
 	void setRewardableObjectConfiguration(ObjectInstanceID mapObjectID, const Rewardable::Configuration & configuration) override {}
 	void setRewardableObjectConfiguration(ObjectInstanceID townInstanceID, BuildingID buildingID, const Rewardable::Configuration & configuration) override {}
 
+	int getLocalDateForObject(ObjectInstanceID objectId, Date mode = Date::DAY) const override { return 1; }
+
 	void showInfoDialog(InfoWindow * iw) override {}
 
 	void changeSpells(const CGHeroInstance * hero, bool give, const std::set<SpellID> &spells) override {}

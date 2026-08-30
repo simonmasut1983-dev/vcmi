@@ -10,11 +10,33 @@
 #pragma once
 
 #include "../../lib/GameConstants.h"
+#include "../../lib/constants/EntityIdentifiers.h"
+#include "../../lib/constants/Enumerations.h"
+#include "../../lib/mapping/StrategicRegionMap.h"
 
 class CGameHandler;
 
 class TurnOrderProcessor : boost::noncopyable
 {
+public:
+	struct WeeklySimturnsWeekInfo
+	{
+		int startDay = 0;
+		EWeekType weekType = EWeekType::NORMAL;
+		CreatureID creatureId = CreatureID::NONE;
+		int additionalGrowth = 0;
+
+		template<typename Handler>
+		void serialize(Handler & h)
+		{
+			h & startDay;
+			h & weekType;
+			h & creatureId;
+			h & additionalGrowth;
+		}
+	};
+
+private:
 	CGameHandler * gameHandler;
 
 	struct PlayerPair
@@ -42,7 +64,11 @@ class TurnOrderProcessor : boost::noncopyable
 	std::set<PlayerColor> actedPlayers;
 
 	std::map<PlayerColor, int> playerDays;
-	std::set<PlayerColor> awaitingWeeklySyncPlayers;
+	std::set<PlayerColor> awaitingWeeklySimturnsPhaseEndPlayers;
+
+	std::map<ObjectInstanceID, int> objectRegionIds;
+	std::map<int, TerritoryRole> regionTerritoryRoles;
+	std::map<int, WeeklySimturnsWeekInfo> weeklySimturnsWeekDecisions;
 
 	std::optional<int> simturnsMinDurationDays;
 	std::optional<int> simturnsMaxDurationDays;
@@ -73,16 +99,18 @@ class TurnOrderProcessor : boost::noncopyable
 	std::vector<PlayerPair> computeContactStatus() const;
 
 	bool weeklySimturnsEnabled() const;
-	bool allWeeklySimturnsPlayersAwaitSync() const;
+	std::optional<TerritoryRole> territoryRoleForObject(ObjectInstanceID objectId) const;
+	PlayerColor playerForTerritoryRole(TerritoryRole role) const;
+	bool allWeeklySimturnsPlayersAwaitPhaseEnd() const;
 	bool weeklySimturnsPhaseEndsBetween(int startDay, int endDay) const;
 	void removeWeeklySimturnsPhaseCreatures();
 
 	void doStartNewDay();
-	void doStartNewWeek();
+	void doSynchronizeWeeklySimturnsPhaseEnd();
 	void doStartPlayerTurn(PlayerColor which, bool applyStartOfTurnEffects = true);
 	void doEndPlayerTurn(PlayerColor which);
 	void doRestartWeeklyPlayerTurn(PlayerColor which);
-	void doWaitForWeeklySync(PlayerColor which);
+	void doWaitForWeeklySimturnsPhaseEnd(PlayerColor which);
 
 	bool isPlayerAwaitsTurn(PlayerColor which) const;
 	bool isPlayerAwaitsNewDay(PlayerColor which) const;
@@ -92,6 +120,13 @@ public:
 
 	bool isContactAllowed(PlayerColor left, PlayerColor right) const;
 	bool isPlayerMakingTurn(PlayerColor which) const;
+
+	void rebuildObjectRegionTable();
+	std::optional<int> getRegionIdForObject(ObjectInstanceID objectId) const;
+	bool objectUsesLocalClockForPlayer(ObjectInstanceID objectId, PlayerColor player) const;
+	int getLocalDateForObject(ObjectInstanceID objectId, Date mode = Date::DAY) const;
+	std::map<PlayerColor, int> getWeeklySimturnsPlayerDaysForDisplay() const;
+	WeeklySimturnsWeekInfo getOrCreateWeeklySimturnsWeekInfo(int localDay);
 
 	/// Add new player to handle (e.g. on game start)
 	void addPlayer(PlayerColor which);
@@ -127,12 +162,21 @@ public:
 		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS_TURN_ORDER))
 		{
 			h & playerDays;
-			h & awaitingWeeklySyncPlayers;
+			h & awaitingWeeklySimturnsPhaseEndPlayers;
+
+			if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS_WEEK_DECISIONS))
+				h & weeklySimturnsWeekDecisions;
+			else
+				weeklySimturnsWeekDecisions.clear();
+
+			objectRegionIds.clear();
+			regionTerritoryRoles.clear();
 		}
 		else
 		{
 			playerDays.clear();
-			awaitingWeeklySyncPlayers.clear();
+			awaitingWeeklySimturnsPhaseEndPlayers.clear();
+			weeklySimturnsWeekDecisions.clear();
 		}
 	}
 };

@@ -197,9 +197,6 @@ bool TurnOrderProcessor::computeCanActSimultaneously(PlayerColor active, PlayerC
 			return false;
 	}
 
-	if (weeklySimturnsEnabled())
-		return true;
-
 	if (gameHandler->gameInfo().getDate(Date::DAY) < simturnsTurnsMinLimit())
 		return true;
 
@@ -258,8 +255,167 @@ bool TurnOrderProcessor::weeklySimturnsEnabled() const
 {
 	return gameHandler->gameInfo().getStartInfo()->extraOptionsInfo.weeklySimturns;
 }
+PlayerColor TurnOrderProcessor::playerForTerritoryRole(TerritoryRole role) const
+{
+	switch(role)
+	{
+	case TerritoryRole::PLAYER1_REALM:
+		return PlayerColor(0);
+	case TerritoryRole::PLAYER2_REALM:
+		return PlayerColor(1);
+	default:
+		return PlayerColor::NEUTRAL;
+	}
+}
 
-bool TurnOrderProcessor::allWeeklySimturnsPlayersAwaitSync() const
+void TurnOrderProcessor::rebuildObjectRegionTable()
+{
+	objectRegionIds.clear();
+	regionTerritoryRoles.clear();
+
+	const auto & strategicMap = gameHandler->gameState().getMap().strategicRegionMap;
+	std::map<int, int> subregionToRegion;
+	for(const auto & region : strategicMap.regions)
+	{
+		regionTerritoryRoles[region.id] = region.territoryRole;
+		for(const auto subregionId : region.subregionIds)
+			subregionToRegion[subregionId] = region.id;
+	}
+
+	std::map<int3, int> tileRegionIds;
+	int paintedTiles = 0;
+	for(const auto & subregion : strategicMap.subregions)
+	{
+		int regionId = subregion.regionId;
+		if(regionId < 0)
+		{
+			auto regionFromList = subregionToRegion.find(subregion.id);
+			if(regionFromList != subregionToRegion.end())
+				regionId = regionFromList->second;
+		}
+
+		if(regionId < 0)
+			continue;
+
+		for(const auto & tile : subregion.tiles)
+		{
+			tileRegionIds[tile] = regionId;
+			paintedTiles++;
+		}
+	}
+
+	std::map<TerritoryRole, int> assignedByRole;
+	int assignedObjects = 0;
+	int unassignedObjects = 0;
+	for(const auto * object : gameHandler->gameState().getMap().getObjects())
+	{
+		if(!object)
+			continue;
+
+		auto tile = tileRegionIds.find(object->visitablePos());
+		if(tile == tileRegionIds.end())
+		{
+			unassignedObjects++;
+			continue;
+		}
+
+		objectRegionIds[object->id] = tile->second;
+		assignedObjects++;
+
+		auto role = regionTerritoryRoles.find(tile->second);
+		if(role != regionTerritoryRoles.end())
+			assignedByRole[role->second]++;
+	}
+
+	logGlobal->info("Weekly simturns: built runtime object region table: %d objects assigned, %d unassigned, %d regions, %d subregions, %d painted tiles.", assignedObjects, unassignedObjects, static_cast<int>(regionTerritoryRoles.size()), static_cast<int>(strategicMap.subregions.size()), paintedTiles);
+	logGlobal->info("Weekly simturns: object territory assignment: player1=%d player2=%d middle=%d neutral=%d water=%d.", assignedByRole[TerritoryRole::PLAYER1_REALM], assignedByRole[TerritoryRole::PLAYER2_REALM], assignedByRole[TerritoryRole::MIDDLE_TERRITORY], assignedByRole[TerritoryRole::NEUTRAL], assignedByRole[TerritoryRole::WATER]);
+}
+TurnOrderProcessor::WeeklySimturnsWeekInfo TurnOrderProcessor::getOrCreateWeeklySimturnsWeekInfo(int localDay)
+{
+	const int daysPerWeek = LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_DAYS_PER_WEEK);
+	const int daysPerMonth = LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_WEEKS_PER_MONTH) * daysPerWeek;
+	const int dayOfWeek = CGameState::getDate(localDay, Date::DAY_OF_WEEK);
+	const int weekStartDay = localDay - dayOfWeek + 1;
+
+	auto existingDecision = weeklySimturnsWeekDecisions.find(weekStartDay);
+	if(existingDecision != weeklySimturnsWeekDecisions.end())
+		return existingDecision->second;
+
+	const bool newMonth = ((weekStartDay - 1) % daysPerMonth) == 0;
+	auto [weekType, creatureId, additionalGrowth] = gameHandler->newTurnProcessor->pickWeekType(newMonth);
+
+	WeeklySimturnsWeekInfo info;
+	info.startDay = weekStartDay;
+	info.weekType = weekType;
+	info.creatureId = creatureId;
+	info.additionalGrowth = additionalGrowth;
+
+	weeklySimturnsWeekDecisions[weekStartDay] = info;
+	logGlobal->info("Weekly simturns: created server special week decision for local day %d: type=%d creature=%d additionalGrowth=%d.", weekStartDay, static_cast<int>(weekType), creatureId.num, additionalGrowth);
+
+	return info;
+}
+std::optional<int> TurnOrderProcessor::getRegionIdForObject(ObjectInstanceID objectId) const
+{
+	auto region = objectRegionIds.find(objectId);
+	if(region == objectRegionIds.end())
+		return std::nullopt;
+	return region->second;
+}
+
+std::optional<TerritoryRole> TurnOrderProcessor::territoryRoleForObject(ObjectInstanceID objectId) const
+{
+	auto regionId = getRegionIdForObject(objectId);
+	if(!regionId)
+		return std::nullopt;
+
+	auto role = regionTerritoryRoles.find(*regionId);
+	if(role == regionTerritoryRoles.end())
+		return std::nullopt;
+	return role->second;
+}
+
+bool TurnOrderProcessor::objectUsesLocalClockForPlayer(ObjectInstanceID objectId, PlayerColor player) const
+{
+	auto role = territoryRoleForObject(objectId);
+	if(!role)
+		return false;
+
+	return playerForTerritoryRole(*role) == player;
+}
+
+std::map<PlayerColor, int> TurnOrderProcessor::getWeeklySimturnsPlayerDaysForDisplay() const
+{
+	if(!weeklySimturnsEnabled())
+		return {};
+
+	if(gameHandler->gameInfo().getDate(Date::DAY) >= simturnsTurnsMinLimit())
+		return {};
+
+	return playerDays;
+}
+int TurnOrderProcessor::getLocalDateForObject(ObjectInstanceID objectId, Date mode) const
+{
+	const int globalDay = gameHandler->gameState().getDate(Date::DAY);
+	if(!weeklySimturnsEnabled() || globalDay >= simturnsTurnsMinLimit())
+		return gameHandler->gameState().getDate(mode);
+
+	auto role = territoryRoleForObject(objectId);
+	if(!role)
+		return gameHandler->gameState().getDate(mode);
+
+	PlayerColor player = playerForTerritoryRole(*role);
+	if(!player.isValidPlayer())
+		return gameHandler->gameState().getDate(mode);
+
+	auto day = playerDays.find(player);
+	if(day == playerDays.end())
+		return gameHandler->gameState().getDate(mode);
+
+	return CGameState::getDate(day->second, mode);
+}
+
+bool TurnOrderProcessor::allWeeklySimturnsPlayersAwaitPhaseEnd() const
 {
 	size_t activePlayers = 0;
 	for(const auto & player : gameHandler->gameState().players)
@@ -268,7 +424,7 @@ bool TurnOrderProcessor::allWeeklySimturnsPlayersAwaitSync() const
 			activePlayers++;
 	}
 
-	return activePlayers > 0 && awaitingWeeklySyncPlayers.size() == activePlayers;
+	return activePlayers > 0 && awaitingWeeklySimturnsPhaseEndPlayers.size() == activePlayers;
 }
 
 bool TurnOrderProcessor::weeklySimturnsPhaseEndsBetween(int startDay, int endDay) const
@@ -325,30 +481,31 @@ void TurnOrderProcessor::doStartNewDay()
 	tryStartTurnsForPlayers();
 }
 
-void TurnOrderProcessor::doStartNewWeek()
+void TurnOrderProcessor::doSynchronizeWeeklySimturnsPhaseEnd()
 {
 	assert(actingPlayers.empty());
-	assert(allWeeklySimturnsPlayersAwaitSync());
+	assert(allWeeklySimturnsPlayersAwaitPhaseEnd());
 
 	const int currentDay = gameHandler->gameInfo().getDate(Date::DAY);
-	const int daysPerWeek = LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_DAYS_PER_WEEK);
-	const int nextWeekFirstDay = currentDay + daysPerWeek;
-	logGlobal->info("Weekly simturns: all players reached local week boundary. Advancing global day to %d.", nextWeekFirstDay);
+	int nextSynchronizedDay = currentDay;
+	for(auto player : awaitingWeeklySimturnsPhaseEndPlayers)
+	{
+		auto localDay = playerDays.find(player);
+		if(localDay != playerDays.end())
+			nextSynchronizedDay = std::max(nextSynchronizedDay, localDay->second + 1);
+	}
+	logGlobal->info("Weekly simturns: all players reached desynchronized phase end. Advancing global day to %d.", nextSynchronizedDay);
 
-	while(gameHandler->gameInfo().getDate(Date::DAY) + 1 < nextWeekFirstDay)
+	while(gameHandler->gameInfo().getDate(Date::DAY) + 1 < nextSynchronizedDay)
 		gameHandler->onNewTurn();
-
-	for(auto player : awaitingWeeklySyncPlayers)
-		if(gameHandler->gameInfo().getPlayerStatus(player) == EPlayerStatus::INGAME)
-			gameHandler->heroPool->onNewWeek(player);
 
 	gameHandler->onNewTurn();
 
 	if(weeklySimturnsPhaseEndsBetween(currentDay, gameHandler->gameInfo().getDate(Date::DAY)))
 		removeWeeklySimturnsPhaseCreatures();
 
-	auto playersToRestart = awaitingWeeklySyncPlayers;
-	awaitingWeeklySyncPlayers.clear();
+	auto playersToRestart = awaitingWeeklySimturnsPhaseEndPlayers;
+	awaitingWeeklySimturnsPhaseEndPlayers.clear();
 
 	for(auto player : playersToRestart)
 	{
@@ -356,9 +513,12 @@ void TurnOrderProcessor::doStartNewWeek()
 			continue;
 
 		playerDays[player] = gameHandler->gameInfo().getDate(Date::DAY);
-		gameHandler->newTurnProcessor->onWeeklySimturnsLocalDay(player);
-		doStartPlayerTurn(player);
+		actedPlayers.erase(player);
+		awaitingPlayers.insert(player);
 	}
+
+	updateAndNotifyContactStatus();
+	tryStartTurnsForPlayers();
 }
 
 void TurnOrderProcessor::doStartPlayerTurn(PlayerColor which, bool applyStartOfTurnEffects)
@@ -403,20 +563,20 @@ void TurnOrderProcessor::doRestartWeeklyPlayerTurn(PlayerColor which)
 	doStartPlayerTurn(which, false);
 }
 
-void TurnOrderProcessor::doWaitForWeeklySync(PlayerColor which)
+void TurnOrderProcessor::doWaitForWeeklySimturnsPhaseEnd(PlayerColor which)
 {
 	assert(isPlayerMakingTurn(which));
 
 	actingPlayers.erase(which);
-	awaitingWeeklySyncPlayers.insert(which);
+	awaitingWeeklySimturnsPhaseEndPlayers.insert(which);
 	logGlobal->info("Weekly simturns: player %s waits at local day %d.", which, playerDays.at(which));
 
 	PlayerEndsTurn pet;
 	pet.player = which;
 	gameHandler->sendAndApply(pet);
 
-	if(allWeeklySimturnsPlayersAwaitSync())
-		doStartNewWeek();
+	if(allWeeklySimturnsPlayersAwaitPhaseEnd())
+		doSynchronizeWeeklySimturnsPhaseEnd();
 }
 
 void TurnOrderProcessor::doEndPlayerTurn(PlayerColor which)
@@ -440,7 +600,7 @@ void TurnOrderProcessor::addPlayer(PlayerColor which)
 {
 	awaitingPlayers.insert(which);
 
-	if(weeklySimturnsEnabled())
+	if(weeklySimturnsEnabled() && gameHandler->gameInfo().getDate(Date::DAY) < simturnsTurnsMinLimit())
 		playerDays.try_emplace(which, gameHandler->gameInfo().getDate(Date::DAY));
 }
 
@@ -450,7 +610,7 @@ void TurnOrderProcessor::removePlayer(PlayerColor which)
 	actingPlayers.erase(which);
 	actedPlayers.erase(which);
 	playerDays.erase(which);
-	awaitingWeeklySyncPlayers.erase(which);
+	awaitingWeeklySimturnsPhaseEndPlayers.erase(which);
 }
 
 void TurnOrderProcessor::resumeTurnOrder()
@@ -482,15 +642,14 @@ bool TurnOrderProcessor::onPlayerEndsTurn(PlayerColor which)
 		return false;
 	}
 
-	if(weeklySimturnsEnabled())
+	if(weeklySimturnsEnabled() && gameHandler->gameInfo().getDate(Date::DAY) < simturnsTurnsMinLimit())
 	{
 		auto & playerDay = playerDays[which];
 		if(playerDay == 0)
 			playerDay = gameHandler->gameInfo().getDate(Date::DAY);
 
-		const int daysPerWeek = LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_DAYS_PER_WEEK);
-		if(playerDay % daysPerWeek == 0)
-			doWaitForWeeklySync(which);
+		if(playerDay >= simturnsTurnsMinLimit())
+			doWaitForWeeklySimturnsPhaseEnd(which);
 		else
 		{
 			playerDay++;
@@ -532,8 +691,9 @@ void TurnOrderProcessor::onGameStarted()
 	if (actingPlayers.empty())
 		blockedContacts = computeContactStatus();
 
-	if(weeklySimturnsEnabled())
+	if(weeklySimturnsEnabled() && gameHandler->gameInfo().getDate(Date::DAY) < simturnsTurnsMinLimit())
 	{
+		rebuildObjectRegionTable();
 		for(const auto & player : gameHandler->gameState().players)
 		{
 			if(!player.first.isValidPlayer() || player.second.status != EPlayerStatus::INGAME)

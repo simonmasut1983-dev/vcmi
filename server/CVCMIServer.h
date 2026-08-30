@@ -58,6 +58,7 @@ class CVCMIServer : public LobbyInfo, public INetworkServerListener, public INet
 	std::shared_ptr<IServerDiscoveryListener> discoveryListener;
 
 	bool loadSavedGame(CGameHandler & handler, const StartInfo & info);
+	void applyWeeklySimturnsModConfig();
 public:
 	uint16_t getPort() const override
 	{

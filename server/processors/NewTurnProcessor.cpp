@@ -11,6 +11,7 @@
 #include "NewTurnProcessor.h"
 
 #include "HeroPoolProcessor.h"
+#include "TurnOrderProcessor.h"
 
 #include "../CGameHandler.h"
 
@@ -24,7 +25,10 @@
 #include "../../lib/entities/ResourceTypeHandler.h"
 #include "../../lib/gameState/CGameState.h"
 #include "../../lib/gameState/SThievesGuildInfo.h"
+#include "../../lib/mapObjects/CGCreature.h"
+#include "../../lib/mapObjects/CGDwelling.h"
 #include "../../lib/mapObjects/CGHeroInstance.h"
+#include "../../lib/mapObjects/CRewardableObject.h"
 #include "../../lib/mapObjects/CGTownInstance.h"
 #include "../../lib/mapObjects/IOwnableObject.h"
 #include "../../lib/mapping/CMap.h"
@@ -677,7 +681,9 @@ NewTurn NewTurnProcessor::generateNewTurnPack()
 	bool firstTurn = !gameHandler->gameInfo().getDate(Date::DAY);
 	bool newWeek = gameHandler->gameInfo().getDate(Date::DAY_OF_WEEK) == daysPerWeek; //day numbers are confusing, as day was not yet switched
 	bool newMonth = gameHandler->gameInfo().getDate(Date::DAY_OF_MONTH) == daysPerMonth;
-	bool weeklySimturns = gameHandler->gameInfo().getStartInfo()->extraOptionsInfo.weeklySimturns;
+	const bool weeklySimturns = !gameHandler->turnOrder->getWeeklySimturnsPlayerDaysForDisplay().empty();
+
+	n.weeklySimturnsPlayerDays = gameHandler->turnOrder->getWeeklySimturnsPlayerDaysForDisplay();
 
 	int additionalGrowth = 0;
 
@@ -689,10 +695,20 @@ NewTurn NewTurnProcessor::generateNewTurnPack()
 
 	if (newWeek && !firstTurn)
 	{
-		auto [specialWeek, creatureID, addGrowth] = pickWeekType(newMonth);
-		n.specialWeek = specialWeek;
-		n.creatureid = creatureID;
-		additionalGrowth = addGrowth;
+		if(weeklySimturns)
+		{
+			auto weekInfo = gameHandler->turnOrder->getOrCreateWeeklySimturnsWeekInfo(n.day);
+			n.specialWeek = weekInfo.weekType;
+			n.creatureid = weekInfo.creatureId;
+			additionalGrowth = weekInfo.additionalGrowth;
+		}
+		else
+		{
+			auto [specialWeek, creatureID, addGrowth] = pickWeekType(newMonth);
+			n.specialWeek = specialWeek;
+			n.creatureid = creatureID;
+			additionalGrowth = addGrowth;
+		}
 	}
 
 	if(firstTurn || !weeklySimturns)
@@ -707,7 +723,8 @@ NewTurn NewTurnProcessor::generateNewTurnPack()
 		for (const auto & townID : gameHandler->gameState().getMap().getAllTowns())
 		{
 			const auto * t = gameHandler->gameState().getTown(townID);
-			n.availableCreatures.push_back(generateTownGrowth(t, n.specialWeek, n.creatureid, firstTurn, additionalGrowth));
+			if(!weeklySimturns || !t->getOwner().isValidPlayer())
+				n.availableCreatures.push_back(generateTownGrowth(t, n.specialWeek, n.creatureid, firstTurn, additionalGrowth));
 		}
 
 		n.newRumor = pickNewRumor();
@@ -762,6 +779,51 @@ void NewTurnProcessor::onNewTurn()
 	logGlobal->trace("Info about turn %d has been sent!", n.day);
 }
 
+void NewTurnProcessor::processWeeklySimturnsLocalMapObjects(PlayerColor player)
+{
+	gameHandler->turnOrder->rebuildObjectRegionTable();
+
+	int processedObjects = 0;
+	int rewardableObjects = 0;
+	int dwellingObjects = 0;
+	int creatureObjects = 0;
+	for(auto & object : gameHandler->gameState().getMap().getObjects())
+	{
+		if(!object)
+			continue;
+
+		if(!gameHandler->turnOrder->objectUsesLocalClockForPlayer(object->id, player))
+			continue;
+
+		const bool isRewardable = dynamic_cast<const CRewardableObject *>(object) != nullptr;
+		const bool isDwelling = dynamic_cast<const CGDwelling *>(object) != nullptr;
+		const bool isCreature = dynamic_cast<const CGCreature *>(object) != nullptr;
+		if(!isRewardable && !isDwelling && !isCreature)
+			continue;
+
+		object->newTurn(*gameHandler, *gameHandler->randomizer);
+		processedObjects++;
+		if(isRewardable)
+			rewardableObjects++;
+		if(isDwelling)
+			dwellingObjects++;
+		if(isCreature)
+			creatureObjects++;
+	}
+
+	logGlobal->info("Weekly simturns: processed %d local timed map objects for player %s: rewardables=%d dwellings=%d creatures=%d.", processedObjects, player, rewardableObjects, dwellingObjects, creatureObjects);
+}
+void NewTurnProcessor::onWeeklySimturnsLocalNewWeek(PlayerColor player, int localDay, WeeklySimturnsLocalDay & pack)
+{
+	gameHandler->heroPool->onNewWeek(player);
+
+	for(const auto * town : gameHandler->gameState().getPlayerState(player)->getTowns())
+	{
+		auto weekInfo = gameHandler->turnOrder->getOrCreateWeeklySimturnsWeekInfo(localDay);
+		pack.availableCreatures.push_back(generateTownGrowth(town, weekInfo.weekType, weekInfo.creatureId, false, weekInfo.additionalGrowth));
+	}
+}
+
 void NewTurnProcessor::onWeeklySimturnsLocalDay(PlayerColor player)
 {
 	WeeklySimturnsLocalDay pack;
@@ -769,9 +831,20 @@ void NewTurnProcessor::onWeeklySimturnsLocalDay(PlayerColor player)
 	pack.income = generatePlayerIncome(player, true, false);
 	pack.heroesMana = updateHeroesManaPoints(player);
 	pack.heroesMovement = updateHeroesMovementPoints(player);
+	pack.weeklySimturnsPlayerDays = gameHandler->turnOrder->getWeeklySimturnsPlayerDaysForDisplay();
 
 	for(const auto * town : gameHandler->gameState().getPlayerState(player)->getTowns())
 		pack.towns.push_back(town->id);
+
+	processWeeklySimturnsLocalMapObjects(player);
+
+	auto localPlayerDay = pack.weeklySimturnsPlayerDays.find(player);
+	if(localPlayerDay != pack.weeklySimturnsPlayerDays.end()
+		&& localPlayerDay->second > 1
+		&& CGameState::getDate(localPlayerDay->second, Date::DAY_OF_WEEK) == 1)
+	{
+		onWeeklySimturnsLocalNewWeek(player, localPlayerDay->second, pack);
+	}
 
 	gameHandler->sendAndApply(pack);
 }

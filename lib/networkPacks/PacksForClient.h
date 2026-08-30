@@ -1210,6 +1210,7 @@ struct DLL_LINKAGE NewTurn : public CPackForClient
 	std::vector<SetMana> heroesMana;
 	std::vector<SetAvailableCreatures> availableCreatures;
 	std::map<PlayerColor, ResourceSet> playerIncome;
+	std::map<PlayerColor, int> weeklySimturnsPlayerDays;
 	std::optional<RumorState> newRumor; // only on new weeks
 	std::optional<InfoWindow> newWeekNotification; // only on new week
 	bool resetTownDailyLimits = true;
@@ -1225,6 +1226,8 @@ struct DLL_LINKAGE NewTurn : public CPackForClient
 		h & heroesMana;
 		h & availableCreatures;
 		h & playerIncome;
+		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS_LOCAL_DAYS_UI))
+			h & weeklySimturnsPlayerDays;
 		h & newRumor;
 		h & newWeekNotification;
 		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS))
@@ -1238,7 +1241,9 @@ struct DLL_LINKAGE WeeklySimturnsLocalDay : public CPackForClient
 	ResourceSet income;
 	std::vector<SetMovePoints> heroesMovement;
 	std::vector<SetMana> heroesMana;
+	std::vector<SetAvailableCreatures> availableCreatures;
 	std::vector<ObjectInstanceID> towns;
+	std::map<PlayerColor, int> weeklySimturnsPlayerDays;
 
 	void visitTyped(ICPackVisitor & visitor) override;
 
@@ -1248,7 +1253,10 @@ struct DLL_LINKAGE WeeklySimturnsLocalDay : public CPackForClient
 		h & income;
 		h & heroesMovement;
 		h & heroesMana;
+		h & availableCreatures;
 		h & towns;
+		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS_LOCAL_DAYS_UI))
+			h & weeklySimturnsPlayerDays;
 	}
 };
 

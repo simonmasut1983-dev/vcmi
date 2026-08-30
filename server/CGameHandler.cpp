@@ -118,6 +118,13 @@ const CGameHandler::GameCb * CGameHandler::game() const
 {
 	return gs.get();
 }
+int CGameHandler::getLocalDateForObject(ObjectInstanceID objectId, Date mode) const
+{
+	if(!turnOrder)
+		return gameState().getDate(mode);
+
+	return turnOrder->getLocalDateForObject(objectId, mode);
+}
 
 vstd::CLoggerBase * CGameHandler::logger() const
 {

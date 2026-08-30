@@ -339,7 +339,8 @@ void CRewardableObject::setPropertyDer(ObjProperty what, ObjPropertyID identifie
 
 void CRewardableObject::newTurn(IGameEventCallback & gameEvents, IGameRandomizer & gameRandomizer) const
 {
-	if (configuration.resetParameters.period != 0 && cb->getDate(Date::DAY) > 1 && ((cb->getDate(Date::DAY)-1) % configuration.resetParameters.period) == 0)
+	const int localDay = gameEvents.getLocalDateForObject(id, Date::DAY);
+	if (configuration.resetParameters.period != 0 && localDay > 1 && ((localDay - 1) % configuration.resetParameters.period) == 0)
 	{
 		if (configuration.resetParameters.rewards)
 		{

@@ -79,6 +79,7 @@ public:
 	void updateOnLoad(const StartInfo & si);
 
 	ui32 day; //total number of days in game
+	std::map<PlayerColor, int> weeklySimturnsPlayerDays; // client-side display of desynchronized local clocks
 	std::map<PlayerColor, PlayerState> players;
 	std::map<TeamID, TeamState> teams;
 	CBonusSystemNode globalEffects;
@@ -192,6 +193,10 @@ public:
 			h & heroesPool;
 		h & globalEffects;
 		h & currentRumor;
+		if(h.hasFeature(Handler::Version::WEEKLY_SIMTURNS_LOCAL_DAYS_UI))
+			h & weeklySimturnsPlayerDays;
+		else
+			weeklySimturnsPlayerDays.clear();
 		h & campaign;
 		if (!h.hasFeature(Handler::Version::RANDOMIZATION_REWORK))
 		{
