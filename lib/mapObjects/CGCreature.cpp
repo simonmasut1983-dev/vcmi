@@ -114,6 +114,8 @@ std::string CGCreature::getPopupText(const CGHeroInstance * hero) const
 	else
 	{
 		hoverName = getHoverText(hero->tempOwner);
+		if(!stacks.empty())
+			hoverName += " (" + std::to_string(stacks.begin()->second->getCount()) + ")";
 	}
 
 	if (settings["general"]["enableUiEnhancements"].Bool())
@@ -146,6 +148,8 @@ std::string CGCreature::getPopupText(const CGHeroInstance * hero) const
 std::string CGCreature::getPopupText(PlayerColor player) const
 {
 	std::string hoverName = getHoverText(player);
+	if(!stacks.empty())
+		hoverName += " (" + std::to_string(stacks.begin()->second->getCount()) + ")";
 	if (settings["general"]["enableUiEnhancements"].Bool())
 		hoverName += getMonsterLevelText();
 	return hoverName;

@@ -30,6 +30,7 @@
 #include "../../lib/mapObjects/CGHeroInstance.h"
 #include "../../lib/mapObjects/CRewardableObject.h"
 #include "../../lib/mapObjects/CGTownInstance.h"
+#include "../../lib/mapObjects/TownBuildingInstance.h"
 #include "../../lib/mapObjects/IOwnableObject.h"
 #include "../../lib/mapping/CMap.h"
 #include "../../lib/mapping/CCastleEvent.h"
@@ -690,7 +691,7 @@ NewTurn NewTurnProcessor::generateNewTurnPack(bool suppressNewWeekNotification)
 	if (!firstTurn)
 	{
 		for (const auto & player : gameHandler->gameState().players)
-			n.playerIncome[player.first] = generatePlayerIncome(player.first, !weeklySimturns, newWeek);
+			n.playerIncome[player.first] = generatePlayerIncome(player.first, !weeklySimturns, newWeek && !weeklySimturns);
 	}
 
 	if (newWeek && !firstTurn)
@@ -813,11 +814,22 @@ void NewTurnProcessor::processWeeklySimturnsLocalMapObjects(PlayerColor player)
 
 	logGlobal->info("Weekly simturns: processed %d local timed map objects for player %s: rewardables=%d dwellings=%d creatures=%d.", processedObjects, player, rewardableObjects, dwellingObjects, creatureObjects);
 }
+
+void NewTurnProcessor::processWeeklySimturnsLocalTownBuildings(PlayerColor player)
+{
+	for(const auto * town : gameHandler->gameState().getPlayerState(player)->getTowns())
+	{
+		for(const auto & building : town->rewardableBuildings)
+			building.second->newTurn(*gameHandler, *gameHandler->randomizer);
+	}
+}
+
 void NewTurnProcessor::onWeeklySimturnsLocalNewWeek(PlayerColor player, int localDay, WeeklySimturnsLocalDay & pack)
 {
 	gameHandler->heroPool->onNewWeek(player);
 
 	const auto weekInfo = gameHandler->turnOrder->getOrCreateWeeklySimturnsWeekInfo(localDay);
+	pack.income += generatePlayerIncome(player, false, true);
 
 	if(weekInfo.weekType != EWeekType::FIRST_WEEK)
 	{
@@ -842,6 +854,7 @@ void NewTurnProcessor::onWeeklySimturnsLocalDay(PlayerColor player)
 		pack.towns.push_back(town->id);
 
 	processWeeklySimturnsLocalMapObjects(player);
+	processWeeklySimturnsLocalTownBuildings(player);
 
 	auto localPlayerDay = pack.weeklySimturnsPlayerDays.find(player);
 	const bool hasLocalDay = localPlayerDay != pack.weeklySimturnsPlayerDays.end();

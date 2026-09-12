@@ -392,6 +392,15 @@ bool TurnOrderProcessor::objectUsesLocalClockForPlayer(ObjectInstanceID objectId
 	return playerForTerritoryRole(*role) == player;
 }
 
+bool TurnOrderProcessor::objectUsesPlayerLocalClock(ObjectInstanceID objectId) const
+{
+	auto role = territoryRoleForObject(objectId);
+	if(!role)
+		return false;
+
+	return playerForTerritoryRole(*role).isValidPlayer();
+}
+
 std::map<PlayerColor, int> TurnOrderProcessor::getWeeklySimturnsPlayerDaysForDisplay() const
 {
 	if(!weeklySimturnsEnabled())
@@ -463,6 +472,27 @@ void TurnOrderProcessor::removeWeeklySimturnsPhaseCreatures()
 	logGlobal->info("Weekly simturns: removed %d marked neutral creatures at protected phase end.", removed);
 }
 
+void TurnOrderProcessor::removeWeeklySimturnsPhaseBlockers()
+{
+	std::vector<ObjectInstanceID> blockerIds;
+
+	for(const auto * object : gameHandler->gameState().getMap().getObjects())
+	{
+		if(object && object->getTypeName() == "towerDarkEye" && object->getSubtypeName() == "object")
+			blockerIds.push_back(object->id);
+	}
+
+	int removed = 0;
+	for(const auto & blockerId : blockerIds)
+	{
+		const auto * blocker = gameHandler->gameInfo().getObj(blockerId, false);
+		if(blocker && gameHandler->removeObject(blocker, PlayerColor::NEUTRAL))
+			removed++;
+	}
+
+	logGlobal->info("Weekly simturns: removed %d Dark Eye phase blockers at protected phase end.", removed);
+}
+
 void TurnOrderProcessor::doStartNewDay()
 {
 	assert(awaitingPlayers.empty());
@@ -505,12 +535,15 @@ void TurnOrderProcessor::doSynchronizeWeeklySimturnsPhaseEnd()
 	logGlobal->info("Weekly simturns: all players reached desynchronized phase end. Advancing global day to %d.", nextSynchronizedDay);
 
 	while(gameHandler->gameInfo().getDate(Date::DAY) + 1 < nextSynchronizedDay)
-		gameHandler->onNewTurn(true);
+		gameHandler->onNewTurn(true, true);
 
-	gameHandler->onNewTurn();
+	gameHandler->onNewTurn(false, true);
 
 	if(weeklySimturnsPhaseEndsBetween(currentDay, gameHandler->gameInfo().getDate(Date::DAY)))
+	{
 		removeWeeklySimturnsPhaseCreatures();
+		removeWeeklySimturnsPhaseBlockers();
+	}
 
 	auto playersToRestart = awaitingWeeklySimturnsPhaseEndPlayers;
 	awaitingWeeklySimturnsPhaseEndPlayers.clear();

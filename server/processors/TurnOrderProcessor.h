@@ -105,6 +105,7 @@ private:
 	bool weeklySimturnsPhaseEndsBetween(int startDay, int endDay) const;
 	void pregenerateWeeklySimturnsWeekDecisions();
 	void removeWeeklySimturnsPhaseCreatures();
+	void removeWeeklySimturnsPhaseBlockers();
 
 	void doStartNewDay();
 	void doSynchronizeWeeklySimturnsPhaseEnd();
@@ -125,6 +126,7 @@ public:
 	void rebuildObjectRegionTable();
 	std::optional<int> getRegionIdForObject(ObjectInstanceID objectId) const;
 	bool objectUsesLocalClockForPlayer(ObjectInstanceID objectId, PlayerColor player) const;
+	bool objectUsesPlayerLocalClock(ObjectInstanceID objectId) const;
 	int getLocalDateForObject(ObjectInstanceID objectId, Date mode = Date::DAY) const;
 	std::map<PlayerColor, int> getWeeklySimturnsPlayerDaysForDisplay() const;
 	WeeklySimturnsWeekInfo getOrCreateWeeklySimturnsWeekInfo(int localDay);

@@ -14,6 +14,7 @@
 #include "../CPlayerState.h"
 #include "../CSkillHandler.h"
 #include "../callback/IGameInfoCallback.h"
+#include "../gameState/CGameState.h"
 #include "../constants/StringConstants.h"
 #include "../entities/artifact/ArtifactUtils.h"
 #include "../mapObjects/CGHeroInstance.h"
@@ -79,7 +80,17 @@ bool Rewardable::Limiter::heroAllowed(const CGHeroInstance * hero) const
 {
 	if(dayOfWeek != 0)
 	{
-		if (hero->cb->getDate(Date::DAY_OF_WEEK) != dayOfWeek)
+		int currentDayOfWeek = hero->cb->getDate(Date::DAY_OF_WEEK);
+		const auto & localPlayerDays = hero->cb->gameState().weeklySimturnsPlayerDays;
+
+		if(!localPlayerDays.empty())
+		{
+			auto localDay = localPlayerDays.find(hero->tempOwner);
+			if(localDay != localPlayerDays.end())
+				currentDayOfWeek = CGameState::getDate(localDay->second, Date::DAY_OF_WEEK);
+		}
+
+		if (currentDayOfWeek != dayOfWeek)
 			return false;
 	}
 

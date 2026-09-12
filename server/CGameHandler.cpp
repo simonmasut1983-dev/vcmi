@@ -57,6 +57,8 @@
 #include "../lib/mapping/CMapService.h"
 
 #include "../lib/mapObjects/CGCreature.h"
+#include "../lib/mapObjects/CGDwelling.h"
+#include "../lib/mapObjects/CRewardableObject.h"
 #include "../lib/mapObjects/CGMarket.h"
 #include "../lib/mapObjects/TownBuildingInstance.h"
 #include "../lib/mapObjects/CGHeroInstance.h"
@@ -675,7 +677,7 @@ void CGameHandler::addStatistics(StatisticDataSet &stat) const
 	}
 }
 
-void CGameHandler::onNewTurn(bool suppressNewWeekNotification)
+void CGameHandler::onNewTurn(bool suppressNewWeekNotification, bool skipLocalTimedMapObjects)
 {
 	logGlobal->trace("Turn %d", gameState().day+1);
 
@@ -764,8 +766,21 @@ void CGameHandler::onNewTurn(bool suppressNewWeekNotification)
 	//call objects
 	for (auto & elem : gameState().getMap().getObjects())
 	{
-		if (elem)
-			elem->newTurn(*this, *randomizer);
+		if (!elem)
+			continue;
+
+		if(skipLocalTimedMapObjects)
+		{
+			const bool usesPlayerLocalClock = turnOrder->objectUsesPlayerLocalClock(elem->id);
+			const bool isLocalTimedMapObject = dynamic_cast<const CRewardableObject *>(elem) != nullptr
+				|| dynamic_cast<const CGDwelling *>(elem) != nullptr
+				|| dynamic_cast<const CGCreature *>(elem) != nullptr;
+
+			if(usesPlayerLocalClock && isLocalTimedMapObject)
+				continue;
+		}
+
+		elem->newTurn(*this, *randomizer);
 	}
 }
 

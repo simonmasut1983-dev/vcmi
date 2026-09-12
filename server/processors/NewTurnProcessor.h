@@ -39,6 +39,7 @@ class NewTurnProcessor : boost::noncopyable
 	InfoWindow createInfoWindow(EWeekType weekType, CreatureID creatureWeek, bool newMonth, int additionalGrowth);
 
 	void processWeeklySimturnsLocalMapObjects(PlayerColor player);
+	void processWeeklySimturnsLocalTownBuildings(PlayerColor player);
 	void onWeeklySimturnsLocalNewWeek(PlayerColor player, int localDay, WeeklySimturnsLocalDay & pack);
 
 	NewTurn generateNewTurnPack(bool suppressNewWeekNotification = false);

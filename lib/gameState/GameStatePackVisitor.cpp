@@ -250,7 +250,21 @@ void GameStatePackVisitor::visitGiveBonus(GiveBonus & pack)
 	assert(cbsn);
 
 	if(Bonus::OneWeek(&pack.bonus))
-		pack.bonus.turnsRemain = (LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_DAYS_PER_WEEK) + 1) - gs.getDate(Date::DAY_OF_WEEK); // set correct number of days before adding bonus
+	{
+		int dayOfWeek = gs.getDate(Date::DAY_OF_WEEK);
+
+		if(pack.who == GiveBonus::ETarget::OBJECT && !gs.weeklySimturnsPlayerDays.empty())
+		{
+			if(auto * hero = dynamic_cast<CGHeroInstance*>(gs.getObjInstance(pack.id.as<ObjectInstanceID>())))
+			{
+				auto localDay = gs.weeklySimturnsPlayerDays.find(hero->tempOwner);
+				if(localDay != gs.weeklySimturnsPlayerDays.end())
+					dayOfWeek = CGameState::getDate(localDay->second, Date::DAY_OF_WEEK);
+			}
+		}
+
+		pack.bonus.turnsRemain = (LIBRARY->engineSettings()->getInteger(EGameSettings::GENERAL_DAYS_PER_WEEK) + 1) - dayOfWeek; // set correct number of days before adding bonus
+	}
 
 	auto b = std::make_shared<Bonus>(pack.bonus);
 	cbsn->addNewBonus(b);
@@ -1084,9 +1098,12 @@ void GameStatePackVisitor::visitNewTurn(NewTurn & pack)
 	gs.day = pack.day;
 
 	// Update bonuses before doing anything else so hero don't get more MP than needed
-	gs.globalEffects.removeBonusesRecursive(Bonus::OneDay); //works for children -> all game objs
-	gs.globalEffects.reduceBonusDurations(Bonus::NDays);
-	gs.globalEffects.reduceBonusDurations(Bonus::OneWeek);
+	if(pack.weeklySimturnsPlayerDays.empty())
+	{
+		gs.globalEffects.removeBonusesRecursive(Bonus::OneDay); //works for children -> all game objs
+		gs.globalEffects.reduceBonusDurations(Bonus::NDays);
+		gs.globalEffects.reduceBonusDurations(Bonus::OneWeek);
+	}
 	//TODO not really a single root hierarchy, what about bonuses placed elsewhere? [not an issue with H3 mechanics but in the future...]
 
 	for(auto & manaPack : pack.heroesMana)
@@ -1126,6 +1143,13 @@ void GameStatePackVisitor::visitWeeklySimturnsLocalDay(WeeklySimturnsLocalDay & 
 	auto * player = gs.getPlayerState(pack.player);
 	player->resources += pack.income;
 	player->resources.amin(GameConstants::PLAYER_RESOURCES_CAP);
+
+	for(auto * hero : player->getHeroes())
+	{
+		hero->removeBonusesRecursive(Bonus::OneDay);
+		hero->reduceBonusDurations(Bonus::NDays);
+		hero->reduceBonusDurations(Bonus::OneWeek);
+	}
 
 	for(auto & manaPack : pack.heroesMana)
 		manaPack.visit(*this);

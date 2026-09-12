@@ -20,10 +20,11 @@ signals:
 	void strategicRegionMapChanged();
 
 private slots:
-void addRegion();
+	void addRegion();
 	void removeRegion();
 	void addSubregion();
 	void removeSubregion();
+	void keepMiddleTerritoryCreatures();
 	void refreshRegions();
 	void refreshSubregions();
 
@@ -36,6 +37,7 @@ private:
 	QPushButton * removeRegionButton = nullptr;
 	QPushButton * addSubregionButton = nullptr;
 	QPushButton * removeSubregionButton = nullptr;
+	QPushButton * keepMiddleCreaturesButton = nullptr;
 
 	VCMI_LIB_WRAP_NAMESPACE(StrategicRegionMap) * regionMap();
 	VCMI_LIB_WRAP_NAMESPACE(Region) * currentRegion();

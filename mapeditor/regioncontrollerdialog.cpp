@@ -4,6 +4,7 @@
 #include "mapcontroller.h"
 
 #include "../lib/mapping/CMap.h"
+#include "../lib/mapObjects/CGCreature.h"
 
 #include <algorithm>
 #include <array>
@@ -65,8 +66,14 @@ RegionControllerDialog::RegionControllerDialog(MapController & controller, QWidg
 	removeRegionButton = new QPushButton(QStringLiteral("-"), this);
 	addSubregionButton = new QPushButton(QStringLiteral("+"), this);
 	removeSubregionButton = new QPushButton(QStringLiteral("-"), this);
+	keepMiddleCreaturesButton = new QPushButton(tr("Keep middle monsters"), this);
 
 	auto * mainLayout = new QVBoxLayout(this);
+	auto * topActionsLayout = new QHBoxLayout();
+	topActionsLayout->addStretch();
+	topActionsLayout->addWidget(keepMiddleCreaturesButton);
+	mainLayout->addLayout(topActionsLayout);
+
 	auto * territoriesLayout = new QVBoxLayout();
 	territoriesLayout->addWidget(new QLabel(tr("Territories"), this));
 	territoriesLayout->addWidget(territoryCombo);
@@ -104,6 +111,7 @@ RegionControllerDialog::RegionControllerDialog(MapController & controller, QWidg
 	connect(removeRegionButton, &QPushButton::clicked, this, &RegionControllerDialog::removeRegion);
 	connect(addSubregionButton, &QPushButton::clicked, this, &RegionControllerDialog::addSubregion);
 	connect(removeSubregionButton, &QPushButton::clicked, this, &RegionControllerDialog::removeSubregion);
+	connect(keepMiddleCreaturesButton, &QPushButton::clicked, this, &RegionControllerDialog::keepMiddleTerritoryCreatures);
 
 	refreshRegions();
 }
@@ -237,6 +245,50 @@ void RegionControllerDialog::removeSubregion()
 	refreshSubregions();
 }
 
+void RegionControllerDialog::keepMiddleTerritoryCreatures()
+{
+	auto * gameMap = controller.map();
+	auto * strategicMap = regionMap();
+	if(!gameMap || !strategicMap || currentTerritory() != TerritoryRole::MIDDLE_TERRITORY)
+		return;
+
+	std::set<int> middleSubregionIds;
+	for(const auto & region : strategicMap->regions)
+	{
+		if(region.territoryRole != TerritoryRole::MIDDLE_TERRITORY)
+			continue;
+
+		middleSubregionIds.insert(region.subregionIds.begin(), region.subregionIds.end());
+	}
+
+	std::set<int3> middleTiles;
+	for(const auto & subregion : strategicMap->subregions)
+	{
+		if(middleSubregionIds.count(subregion.id) == 0)
+			continue;
+
+		middleTiles.insert(subregion.tiles.begin(), subregion.tiles.end());
+	}
+
+	int updatedCreatures = 0;
+	for(const auto & object : gameMap->objects)
+	{
+		auto * creature = dynamic_cast<CGCreature *>(object.get());
+		if(!creature || !creature->removeAfterSimturnsPhase)
+			continue;
+
+		if(middleTiles.count(creature->visitablePos()) == 0)
+			continue;
+
+		creature->removeAfterSimturnsPhase = false;
+		updatedCreatures++;
+	}
+
+	if(updatedCreatures > 0)
+		markChanged();
+
+	QMessageBox::information(this, tr("Middle Territory monsters"), tr("%1 neutral creature groups will now remain after the desynchronized phase.").arg(updatedCreatures));
+}
 void RegionControllerDialog::refreshRegions()
 {
 	regionsList->clear();
@@ -244,7 +296,17 @@ void RegionControllerDialog::refreshRegions()
 
 	auto * map = regionMap();
 	if(!map)
+	{
+		keepMiddleCreaturesButton->setVisible(false);
 		return;
+	}
+
+	const bool hasMiddleTerritoryRegion = std::any_of(map->regions.begin(), map->regions.end(), [](const Region & region)
+	{
+		return region.territoryRole == TerritoryRole::MIDDLE_TERRITORY;
+	});
+	keepMiddleCreaturesButton->setVisible(hasMiddleTerritoryRegion);
+	keepMiddleCreaturesButton->setEnabled(currentTerritory() == TerritoryRole::MIDDLE_TERRITORY && hasMiddleTerritoryRegion);
 
 	const auto role = currentTerritory();
 	for(const auto & region : map->regions)
