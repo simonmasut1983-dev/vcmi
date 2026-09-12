@@ -916,6 +916,25 @@ void MainWindow::addGroupIntoCatalog(const QString & groupName, bool useCustomNa
 	}
 }
 
+void MainWindow::addArtifactPoolObjectsIntoCatalog(const QString & groupName)
+{
+	for(auto ID : LIBRARY->objtypeh->knownObjects())
+	{
+		if(catalog.count(ID))
+			continue;
+
+		for(auto secondaryID : LIBRARY->objtypeh->knownSubObjects(ID))
+		{
+			auto factory = LIBRARY->objtypeh->getHandlerFor(ID, secondaryID);
+			if(!factory->getArtifactPool().empty())
+			{
+				addGroupIntoCatalog(groupName, true, false, ID);
+				break;
+			}
+		}
+	}
+}
+
 void MainWindow::loadObjectsTree()
 {
 	try
@@ -1053,6 +1072,7 @@ void MainWindow::loadObjectsTree()
 	addGroupIntoCatalog(groups[ARTIFACTS], false, false, Obj::RANDOM_MINOR_ART);
 	addGroupIntoCatalog(groups[ARTIFACTS], false, false, Obj::RANDOM_MAJOR_ART);
 	addGroupIntoCatalog(groups[ARTIFACTS], false, false, Obj::RANDOM_RELIC_ART);
+	addArtifactPoolObjectsIntoCatalog(groups[ARTIFACTS]);
 	addGroupIntoCatalog(groups[ARTIFACTS], true, false, Obj::SPELL_SCROLL);
 	addGroupIntoCatalog(groups[ARTIFACTS], true, false, Obj::PANDORAS_BOX);
 	addGroupIntoCatalog(groups[RESOURCES], true, false, Obj::RANDOM_RESOURCE);

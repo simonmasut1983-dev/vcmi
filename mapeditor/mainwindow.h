@@ -181,6 +181,7 @@ private:
 	void preparePreview(const QModelIndex & index);
 	void addGroupIntoCatalog(const QString & groupName, bool staticOnly);
 	void addGroupIntoCatalog(const QString & groupName, bool useCustomName, bool staticOnly, int ID);
+	void addArtifactPoolObjectsIntoCatalog(const QString & groupName);
 
 	void changeBrushState(int idx);
 	void setTitle();
