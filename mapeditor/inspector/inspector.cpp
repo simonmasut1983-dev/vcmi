@@ -36,6 +36,13 @@
 #include "PickObjectDelegate.h"
 #include "../mapcontroller.h"
 
+namespace
+{
+bool isRandomArtifactObject(const CGArtifact * artifact)
+{
+	return artifact && (MapObjectID::isRandomArtifact(artifact->ID) || LIBRARY->objtypeh->getObjectHandlerName(artifact->ID) == "randomArtifact");
+}
+}
 //===============IMPLEMENT OBJECT INITIALIZATION FUNCTIONS================
 Initializer::Initializer(MapController & controller, CGObjectInstance * o, const PlayerColor & pl)
 	: controller(controller)
@@ -209,10 +216,15 @@ void Initializer::initialize(CGArtifact * o)
 		auto a = controller.map()->createScroll(*RandomGeneratorUtil::nextItem(out, CRandomGenerator::getDefault()));
 		o->setArtifactInstance(a);
 	}
-	else if(o->ID == Obj::ARTIFACT || MapObjectID::isRandomArtifact(o->ID))
+	else if(o->ID == Obj::ARTIFACT)
 	{
 		auto instance = controller.map()->createArtifact(o->getArtifactType());
 		o->setArtifactInstance(instance);
+	}
+	else if(isRandomArtifactObject(o))
+	{
+		// Keep random artifact placeholders unresolved in the editor.
+		// They are rolled into concrete artifacts when the scenario starts.
 	}
 	else
 		throw std::runtime_error("Unimplemented initializer for CGArtifact object ID = "+ std::to_string(o->ID.getNum()));
@@ -381,7 +393,7 @@ void Inspector::updateProperties(CGArtifact * o)
 
 	addProperty(QObject::tr("Message"), o->message, false);
 
-	if(MapObjectID::isRandomArtifact(o->ID))
+	if(isRandomArtifactObject(o))
 		return;
 
 	if(o->ID == Obj::SPELL_SCROLL)
