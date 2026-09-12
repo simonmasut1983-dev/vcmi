@@ -1,0 +1,11 @@
+{
+  "basepath": "artifacts/magicWands/",
+  "sequences": [
+    {
+      "frames": [
+        "airWandMap.png"
+      ],
+      "group": 0
+    }
+  ]
+}

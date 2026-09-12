@@ -1,0 +1,79 @@
+{
+  "waterWandDispel": {
+    "targetType": "CREATURE",
+    "animation": {
+      "affect": [
+        "C05SPW"
+      ]
+    },
+    "sounds": {
+      "cast": "DISPELL"
+    },
+    "levels": {
+      "base": {
+        "targetModifier": {
+          "smart": true
+        },
+        "battleEffects": {
+          "dispel": {
+            "type": "core:dispel",
+            "optional": false,
+            "ignoreImmunity": true,
+            "dispelNegative": true,
+            "dispelNeutral": true,
+            "dispelPositive": true
+          }
+        },
+        "range": "0",
+        "description": "{Dispel}\n\nCasts Dispel from a charged magic wand.",
+        "cost": 2,
+        "power": 10
+      },
+      "advanced": {
+        "targetModifier": {
+          "smart": false
+        }
+      },
+      "expert": {
+        "targetModifier": {
+          "smart": false
+        },
+        "battleEffects": {
+          "dispel": {
+            "optional": true
+          },
+          "removeObstacle": {
+            "optional": true,
+            "type": "core:removeObstacle",
+            "removeAllSpells": true
+          }
+        },
+        "range": "X"
+      },
+      "none": {},
+      "basic": {}
+    },
+    "flags": {
+      "positive": true
+    },
+    "type": "combat",
+    "name": "Wand: Dispel",
+    "school": {
+      "air": false,
+      "earth": false,
+      "fire": false,
+      "water": true
+    },
+    "level": 1,
+    "power": 10,
+    "defaultGainChance": 0,
+    "gainChance": {},
+    "graphics": {
+      "iconBook": "spells/wands/spellbookMwWater.png",
+      "iconScroll": "artifacts/magicWands/waterWand.png",
+      "iconEffect": "artifacts/magicWands/waterWand.png",
+      "iconImmune": "artifacts/magicWands/waterWand.png",
+      "iconScenarioBonus": "artifacts/magicWands/waterWand.png"
+    }
+  }
+}

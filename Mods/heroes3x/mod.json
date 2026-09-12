@@ -1,0 +1,13 @@
+{
+	"name" : "Heroes3X",
+	"description" : "Heroes3X distribution built on Simturns, grouping major gameplay modules as submods.",
+	"version" : "0.1.0",
+	"author" : "Simon",
+	"modType" : "Expansion",
+	"depends" : [
+		"simturns"
+	],
+	"compatibility" : {
+		"min" : "1.7.4"
+	}
+}

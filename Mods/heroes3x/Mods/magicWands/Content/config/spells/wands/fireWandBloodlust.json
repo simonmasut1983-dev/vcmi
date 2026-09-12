@@ -1,0 +1,82 @@
+{
+  "fireWandBloodlust": {
+    "targetType": "CREATURE",
+    "animation": {
+      "affect": [
+        {
+          "effectName": "bloodlust"
+        }
+      ]
+    },
+    "sounds": {
+      "cast": "BLOODLUS"
+    },
+    "levels": {
+      "base": {
+        "range": "0",
+        "targetModifier": {
+          "smart": true
+        },
+        "effects": {
+          "primarySkill": {
+            "val": 3,
+            "type": "PRIMARY_SKILL",
+            "subtype": "primarySkill.attack",
+            "effectRange": "ONLY_MELEE_FIGHT",
+            "duration": "N_TURNS"
+          }
+        },
+        "description": "{Bloodlust}\n\nCasts Bloodlust from a charged magic wand.",
+        "cost": 2,
+        "power": 10
+      },
+      "advanced": {
+        "effects": {
+          "primarySkill": {
+            "val": 6
+          }
+        }
+      },
+      "expert": {
+        "range": "X",
+        "effects": {
+          "primarySkill": {
+            "val": 6
+          }
+        }
+      },
+      "none": {},
+      "basic": {}
+    },
+    "counters": {
+      "spell.weakness": true
+    },
+    "flags": {
+      "positive": true
+    },
+    "targetCondition": {
+      "noneOf": {
+        "bonus.SIEGE_WEAPON": "absolute"
+      }
+    },
+    "type": "combat",
+    "name": "Wand: Bloodlust",
+    "school": {
+      "air": false,
+      "earth": false,
+      "fire": true,
+      "water": false
+    },
+    "level": 1,
+    "power": 10,
+    "defaultGainChance": 0,
+    "gainChance": {},
+    "graphics": {
+      "iconBook": "spells/wands/spellbookMwFire.png",
+      "iconScroll": "artifacts/magicWands/fireWand.png",
+      "iconEffect": "artifacts/magicWands/fireWand.png",
+      "iconImmune": "artifacts/magicWands/fireWand.png",
+      "iconScenarioBonus": "artifacts/magicWands/fireWand.png"
+    }
+  }
+}

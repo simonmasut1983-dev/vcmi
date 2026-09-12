@@ -1,0 +1,80 @@
+{
+  "waterWandBless": {
+    "targetType": "CREATURE",
+    "animation": {
+      "affect": [
+        "C01SPW"
+      ]
+    },
+    "sounds": {
+      "cast": "BLESS"
+    },
+    "levels": {
+      "base": {
+        "range": "0",
+        "targetModifier": {
+          "smart": true
+        },
+        "effects": {
+          "alwaysMaximumDamage": {
+            "val": 0,
+            "type": "ALWAYS_MAXIMUM_DAMAGE",
+            "valueType": "INDEPENDENT_MAX",
+            "duration": "N_TURNS"
+          }
+        },
+        "description": "{Bless}\n\nCasts Bless from a charged magic wand.",
+        "cost": 2,
+        "power": 10
+      },
+      "advanced": {
+        "effects": {
+          "alwaysMaximumDamage": {
+            "val": 1
+          }
+        }
+      },
+      "expert": {
+        "range": "X",
+        "effects": {
+          "alwaysMaximumDamage": {
+            "val": 1
+          }
+        }
+      },
+      "none": {},
+      "basic": {}
+    },
+    "counters": {
+      "spell.curse": true
+    },
+    "flags": {
+      "positive": true
+    },
+    "targetCondition": {
+      "noneOf": {
+        "bonus.SIEGE_WEAPON": "absolute",
+        "bonus.UNDEAD": "absolute"
+      }
+    },
+    "type": "combat",
+    "name": "Wand: Bless",
+    "school": {
+      "air": false,
+      "earth": false,
+      "fire": false,
+      "water": true
+    },
+    "level": 1,
+    "power": 10,
+    "defaultGainChance": 0,
+    "gainChance": {},
+    "graphics": {
+      "iconBook": "spells/wands/spellbookMwWater.png",
+      "iconScroll": "artifacts/magicWands/waterWand.png",
+      "iconEffect": "artifacts/magicWands/waterWand.png",
+      "iconImmune": "artifacts/magicWands/waterWand.png",
+      "iconScenarioBonus": "artifacts/magicWands/waterWand.png"
+    }
+  }
+}

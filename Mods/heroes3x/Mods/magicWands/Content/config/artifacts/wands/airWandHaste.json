@@ -1,0 +1,39 @@
+{
+  "airWandHaste": {
+    "type": [
+      "HERO"
+    ],
+    "slot": "MISC",
+    "class": "TREASURE",
+    "value": 2000,
+    "bonuses": {
+      "castWandSpell": {
+        "type": "SPELL",
+        "subtype": "heroes3x.magicWands:airWandHaste",
+        "limiters": [
+          {
+            "type": "HAS_CHARGES_LIMITER",
+            "cost": 1
+          }
+        ]
+      }
+    },
+    "graphics": {
+      "image": "artifacts/magicWands/airWand.png",
+      "scenarioBonus": "artifacts/magicWands/airWand.png",
+      "map": "artifacts/map/airWandMap"
+    },
+    "text": {
+      "name": "Air Wand: Haste",
+      "description": "{Air Wand: Haste}\n\nAdds Haste Wand to the spellbook. It starts with 3-5 charges and spends one charge per cast.",
+      "event": "You find a charged air wand humming with contained magic."
+    },
+    "charged": {
+      "usageType": "SPELLCAST",
+      "removeOnDepletion": true,
+      "startingChargesMin": 3,
+      "startingChargesMax": 5
+    }
+  }
+}
+

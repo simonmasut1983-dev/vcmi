@@ -1,0 +1,67 @@
+{
+  "waterWandCure": {
+    "targetType": "CREATURE",
+    "animation": {
+      "affect": [
+        "C03SPW"
+      ]
+    },
+    "sounds": {
+      "cast": "CURE"
+    },
+    "levels": {
+      "base": {
+        "targetModifier": {
+          "smart": true
+        },
+        "battleEffects": {
+          "heal": {
+            "type": "core:heal",
+            "healLevel": "heal",
+            "healPower": "permanent",
+            "optional": true
+          },
+          "cure": {
+            "type": "core:dispel",
+            "optional": true,
+            "dispelNegative": true,
+            "dispelNeutral": false,
+            "dispelPositive": false
+          }
+        },
+        "range": "0",
+        "description": "{Cure}\n\nCasts Cure from a charged magic wand.",
+        "cost": 2,
+        "power": 10
+      },
+      "expert": {
+        "range": "X"
+      },
+      "none": {},
+      "basic": {},
+      "advanced": {}
+    },
+    "flags": {
+      "positive": true
+    },
+    "type": "combat",
+    "name": "Wand: Cure",
+    "school": {
+      "air": false,
+      "earth": false,
+      "fire": false,
+      "water": true
+    },
+    "level": 1,
+    "power": 10,
+    "defaultGainChance": 0,
+    "gainChance": {},
+    "graphics": {
+      "iconBook": "spells/wands/spellbookMwWater.png",
+      "iconScroll": "artifacts/magicWands/waterWand.png",
+      "iconEffect": "artifacts/magicWands/waterWand.png",
+      "iconImmune": "artifacts/magicWands/waterWand.png",
+      "iconScenarioBonus": "artifacts/magicWands/waterWand.png"
+    }
+  }
+}

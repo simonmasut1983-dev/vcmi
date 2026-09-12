@@ -1,0 +1,39 @@
+{
+  "earthWandSlow": {
+    "type": [
+      "HERO"
+    ],
+    "slot": "MISC",
+    "class": "TREASURE",
+    "value": 2000,
+    "bonuses": {
+      "castWandSpell": {
+        "type": "SPELL",
+        "subtype": "heroes3x.magicWands:earthWandSlow",
+        "limiters": [
+          {
+            "type": "HAS_CHARGES_LIMITER",
+            "cost": 1
+          }
+        ]
+      }
+    },
+    "graphics": {
+      "image": "artifacts/magicWands/earthWand.png",
+      "scenarioBonus": "artifacts/magicWands/earthWand.png",
+      "map": "artifacts/map/earthWandMap"
+    },
+    "text": {
+      "name": "Earth Wand: Slow",
+      "description": "{Earth Wand: Slow}\n\nAdds Slow Wand to the spellbook. It starts with 3-5 charges and spends one charge per cast.",
+      "event": "You find a charged earth wand humming with contained magic."
+    },
+    "charged": {
+      "usageType": "SPELLCAST",
+      "removeOnDepletion": true,
+      "startingChargesMin": 3,
+      "startingChargesMax": 5
+    }
+  }
+}
+

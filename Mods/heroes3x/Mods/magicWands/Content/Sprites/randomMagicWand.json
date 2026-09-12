@@ -1,0 +1,11 @@
+{
+  "basepath": "artifacts/magicWands/",
+  "sequences": [
+    {
+      "frames": [
+        "randomWand.png"
+      ],
+      "group": 0
+    }
+  ]
+}

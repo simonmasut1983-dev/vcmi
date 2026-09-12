@@ -1,0 +1,43 @@
+{
+  "randomMagicWand": {
+    "name": "Random Magic Wand",
+    "handler": "randomArtifact",
+    "types": {
+      "object": {
+        "removable": true,
+        "artifactPool": [
+          "heroes3x.magicWands:airWandHaste",
+          "heroes3x.magicWands:airWandMagicArrow",
+          "heroes3x.magicWands:earthWandShield",
+          "heroes3x.magicWands:earthWandSlow",
+          "heroes3x.magicWands:earthWandStoneSkin",
+          "heroes3x.magicWands:fireWandBloodlust",
+          "heroes3x.magicWands:fireWandCurse",
+          "heroes3x.magicWands:fireWandMagicArrow",
+          "heroes3x.magicWands:waterWandBless",
+          "heroes3x.magicWands:waterWandCure",
+          "heroes3x.magicWands:waterWandDispel"
+        ],
+        "rmg": {
+          "value": 2000,
+          "rarity": 40
+        },
+        "templates": {
+          "normal": {
+            "animation": "randomMagicWand",
+            "editorAnimation": "randomMagicWand",
+            "visitableFrom": [
+              "+++",
+              "+-+",
+              "+++"
+            ],
+            "mask": [
+              " A",
+              "  "
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "fireWandBloodlust": {
+    "type": [
+      "HERO"
+    ],
+    "slot": "MISC",
+    "class": "TREASURE",
+    "value": 2000,
+    "bonuses": {
+      "castWandSpell": {
+        "type": "SPELL",
+        "subtype": "heroes3x.magicWands:fireWandBloodlust",
+        "limiters": [
+          {
+            "type": "HAS_CHARGES_LIMITER",
+            "cost": 1
+          }
+        ]
+      }
+    },
+    "graphics": {
+      "image": "artifacts/magicWands/fireWand.png",
+      "scenarioBonus": "artifacts/magicWands/fireWand.png",
+      "map": "artifacts/map/fireWandMap"
+    },
+    "text": {
+      "name": "Fire Wand: Bloodlust",
+      "description": "{Fire Wand: Bloodlust}\n\nAdds Bloodlust Wand to the spellbook. It starts with 3-5 charges and spends one charge per cast.",
+      "event": "You find a charged fire wand humming with contained magic."
+    },
+    "charged": {
+      "usageType": "SPELLCAST",
+      "removeOnDepletion": true,
+      "startingChargesMin": 3,
+      "startingChargesMax": 5
+    }
+  }
+}
+
