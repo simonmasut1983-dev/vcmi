@@ -233,6 +233,11 @@ std::shared_ptr<CArtifact> CArtHandler::loadFromJson(const std::string & scope, 
 		{
 			JsonNode templ;
 			templ["animation"].String() = art->advMapDef;
+			templ["visitableFrom"].Vector().emplace_back("+++");
+			templ["visitableFrom"].Vector().emplace_back("+-+");
+			templ["visitableFrom"].Vector().emplace_back("+++");
+			templ["mask"].Vector().emplace_back(" A");
+			templ["mask"].Vector().emplace_back("  ");
 			templ.setModScope(scope);
 
 			// add new template.
