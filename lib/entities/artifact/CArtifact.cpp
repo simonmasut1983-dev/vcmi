@@ -255,6 +255,9 @@ CChargedArtifact::CChargedArtifact()
 	: condition(DischargeArtifactCondition::NONE)
 	,	removeOnDepletion(false)
 	, defaultStartCharges(0)
+	, randomStartChargesMin(0)
+	, randomStartChargesMax(0)
+	, randomStartCharges(false)
 {
 }
 
@@ -276,6 +279,28 @@ void CChargedArtifact::setRemoveOnDepletion(const bool remove)
 void CChargedArtifact::setDefaultStartCharges(const uint16_t charges)
 {
 	defaultStartCharges = charges;
+}
+
+void CChargedArtifact::setRandomStartCharges(const uint16_t minCharges, const uint16_t maxCharges)
+{
+	randomStartChargesMin = minCharges;
+	randomStartChargesMax = maxCharges;
+	randomStartCharges = true;
+}
+
+bool CChargedArtifact::hasRandomStartCharges() const
+{
+	return randomStartCharges;
+}
+
+uint16_t CChargedArtifact::getRandomStartChargesMin() const
+{
+	return randomStartChargesMin;
+}
+
+uint16_t CChargedArtifact::getRandomStartChargesMax() const
+{
+	return randomStartChargesMax;
 }
 
 uint16_t CChargedArtifact::getDefaultStartCharges() const

@@ -41,6 +41,7 @@ class DLL_LINKAGE AObjectTypeHandler : public boost::noncopyable
 
 	std::optional<si32> aiValue;
 	std::vector<BattleField> battlefields;
+	std::set<ArtifactID> artifactPool;
 
 	std::string modScope;
 	std::string typeName;
@@ -100,6 +101,7 @@ public:
 	const RandomMapInfo & getRMGInfo();
 
 	std::optional<si32> getAiValue() const;
+	const std::set<ArtifactID> & getArtifactPool() const;
 
 	/// returns true if this class provides custom text ID's instead of generic per-object name
 	virtual bool hasNameTextID() const;

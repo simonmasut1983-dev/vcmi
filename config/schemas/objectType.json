@@ -44,6 +44,12 @@
 		"name" : {
 			"type" : "string"
 		},
+		"artifactPool" : {
+			"type" : "array",
+			"description" : "Artifacts eligible for random artifact object subtypes using this pool",
+			"items" : { "type" : "string" },
+			"minItems" : 1
+		},
 		"templates" : {
 			"type" : "object",
 			"additionalProperties" : {

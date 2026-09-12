@@ -150,6 +150,10 @@
 			"additionalProperties" : false,
 			"description" : "Determines charged artifact behavior",
 			"required" : ["usageType"],
+			"dependencies" : {
+				"startingChargesMin" : [ "startingChargesMax" ],
+				"startingChargesMax" : [ "startingChargesMin" ]
+			},
 			"properties" : {
 				"usageType": {
 					"type" : "string",
@@ -159,8 +163,19 @@
 					"type" : "boolean"
 				},
 				"startingCharges" : {
-					"type" : "number",
+					"type" : "integer",
+					"minimum" : 0,
 					"description" : "Default starting charge amount"
+				},
+				"startingChargesMin" : {
+					"type" : "integer",
+					"minimum" : 0,
+					"description" : "Minimum random starting charge amount"
+				},
+				"startingChargesMax" : {
+					"type" : "integer",
+					"minimum" : 0,
+					"description" : "Maximum random starting charge amount"
 				}
 			}
 		}

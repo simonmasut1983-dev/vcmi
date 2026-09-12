@@ -257,6 +257,21 @@ std::shared_ptr<CArtifact> CArtHandler::loadFromJson(const std::string & scope, 
 			else
 				art->setDefaultStartCharges(charges);
 		}
+		const auto hasRandomChargesMin = !node["charged"]["startingChargesMin"].isNull();
+		const auto hasRandomChargesMax = !node["charged"]["startingChargesMax"].isNull();
+		if(hasRandomChargesMin != hasRandomChargesMax)
+		{
+			logMod->warn("Warning! Charged artifact %s must define both startingChargesMin and startingChargesMax!", art->getNameTranslated());
+		}
+		else if(hasRandomChargesMin)
+		{
+			const auto minCharges = node["charged"]["startingChargesMin"].Integer();
+			const auto maxCharges = node["charged"]["startingChargesMax"].Integer();
+			if(minCharges > maxCharges)
+				logMod->warn("Warning! Charged artifact %s has invalid random charges range %d-%d!", art->getNameTranslated(), minCharges, maxCharges);
+			else
+				art->setRandomStartCharges(minCharges, maxCharges);
+		}
 	}
 
 	// Some bonuses must be located in the instance.

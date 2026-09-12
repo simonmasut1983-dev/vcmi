@@ -70,6 +70,9 @@ class DLL_LINKAGE CChargedArtifact
 	DischargeArtifactCondition condition;
 	bool removeOnDepletion;
 	uint16_t defaultStartCharges;
+	uint16_t randomStartChargesMin;
+	uint16_t randomStartChargesMax;
+	bool randomStartCharges;
 
 protected:
 	CChargedArtifact();
@@ -80,6 +83,10 @@ public:
 	void setCondition(const DischargeArtifactCondition & dischargeCondition);
 	void setRemoveOnDepletion(const bool remove);
 	void setDefaultStartCharges(const uint16_t charges);
+	void setRandomStartCharges(const uint16_t minCharges, const uint16_t maxCharges);
+	bool hasRandomStartCharges() const;
+	uint16_t getRandomStartChargesMin() const;
+	uint16_t getRandomStartChargesMax() const;
 	uint16_t getDefaultStartCharges() const;
 	DischargeArtifactCondition getDischargeCondition() const;
 	bool getRemoveOnDepletion() const;

@@ -134,6 +134,14 @@ void AObjectTypeHandler::init(const JsonNode & input)
 		}
 	}
 
+	for(const auto & node : input["artifactPool"].Vector())
+	{
+		LIBRARY->identifiers()->requestIdentifier("artifact", node, [this](si32 identifier)
+		{
+			artifactPool.insert(ArtifactID(identifier));
+		});
+	}
+
 	initTypeData(input);
 }
 
@@ -271,6 +279,11 @@ const RandomMapInfo & AObjectTypeHandler::getRMGInfo()
 std::optional<si32> AObjectTypeHandler::getAiValue() const
 {
 	return aiValue;
+}
+
+const std::set<ArtifactID> & AObjectTypeHandler::getArtifactPool() const
+{
+	return artifactPool;
 }
 
 bool AObjectTypeHandler::isStaticObject()

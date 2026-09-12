@@ -20,6 +20,7 @@
 #include "../GameSettings.h"
 #include "../RiverHandler.h"
 #include "../RoadHandler.h"
+#include "../CRandomGenerator.h"
 #include "../TerrainHandler.h"
 
 #include "../bonuses/Limiters.h"
@@ -903,7 +904,10 @@ CArtifactInstance * CMap::createArtifact(const ArtifactID & artID, const SpellID
 		bonus->sid = artInst->getId();
 		bonus->val = 0;
 		artInst->addNewBonus(bonus);
-		artInst->addCharges(art->getDefaultStartCharges());
+		if(art->hasRandomStartCharges())
+			artInst->addCharges(CRandomGenerator::getDefault().nextInt(art->getRandomStartChargesMin(), art->getRandomStartChargesMax()));
+		else
+			artInst->addCharges(art->getDefaultStartCharges());
 	}
 
 	for (const auto & bonus : art->instanceBonuses)

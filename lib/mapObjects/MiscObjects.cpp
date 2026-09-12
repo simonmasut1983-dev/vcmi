@@ -646,23 +646,31 @@ ArtifactID CGArtifact::getArtifactType() const
 
 void CGArtifact::pickRandomObject(IGameRandomizer & gameRandomizer)
 {
-	switch(ID.toEnum())
+	const auto & artifactPool = getObjectHandler()->getArtifactPool();
+	if(!artifactPool.empty())
 	{
-		case MapObjectID::RANDOM_ART:
-			subID = gameRandomizer.rollArtifact();
-			break;
-		case MapObjectID::RANDOM_TREASURE_ART:
-			subID = gameRandomizer.rollArtifact(EArtifactClass::ART_TREASURE);
-			break;
-		case MapObjectID::RANDOM_MINOR_ART:
-			subID = gameRandomizer.rollArtifact(EArtifactClass::ART_MINOR);
-			break;
-		case MapObjectID::RANDOM_MAJOR_ART:
-			subID = gameRandomizer.rollArtifact(EArtifactClass::ART_MAJOR);
-			break;
-		case MapObjectID::RANDOM_RELIC_ART:
-			subID = gameRandomizer.rollArtifact(EArtifactClass::ART_RELIC);
-			break;
+		subID = gameRandomizer.rollArtifact(artifactPool);
+	}
+	else
+	{
+		switch(ID.toEnum())
+		{
+			case MapObjectID::RANDOM_ART:
+				subID = gameRandomizer.rollArtifact();
+				break;
+			case MapObjectID::RANDOM_TREASURE_ART:
+				subID = gameRandomizer.rollArtifact(EArtifactClass::ART_TREASURE);
+				break;
+			case MapObjectID::RANDOM_MINOR_ART:
+				subID = gameRandomizer.rollArtifact(EArtifactClass::ART_MINOR);
+				break;
+			case MapObjectID::RANDOM_MAJOR_ART:
+				subID = gameRandomizer.rollArtifact(EArtifactClass::ART_MAJOR);
+				break;
+			case MapObjectID::RANDOM_RELIC_ART:
+				subID = gameRandomizer.rollArtifact(EArtifactClass::ART_RELIC);
+				break;
+		}
 	}
 
 	if (ID != MapObjectID::SPELL_SCROLL && ID != MapObjectID::ARTIFACT)
