@@ -652,13 +652,15 @@ QGraphicsItem * SelectionObjectsLayer::draw(const QRectF & section)
 			auto objectArea = getObjectArea(obj);
 			if(obj != newObject.get() && section.intersects(objectArea))
 			{
-				auto pos = obj->anchorPos();
+				auto blockedPos = obj->getBlockedPos();
+				auto firstBlockedPos = blockedPos.begin();
+				auto pos = firstBlockedPos != blockedPos.end() ? *firstBlockedPos : obj->anchorPos();
 				QRectF bbox(pos.x, pos.y, 1, 1);
-				for(const auto & t : obj->getBlockedPos())
+				for(const auto & t : blockedPos)
 				{
 					QPointF topLeft(std::min(t.x * 1.0, bbox.topLeft().x()), std::min(t.y * 1.0, bbox.topLeft().y()));
 					bbox.setTopLeft(topLeft);
-					QPointF bottomRight(std::max(t.x * 1.0, bbox.bottomRight().x()), std::max(t.y * 1.0, bbox.bottomRight().y()));
+					QPointF bottomRight(std::max(t.x * 1.0 + 1.0, bbox.bottomRight().x()), std::max(t.y * 1.0 + 1.0, bbox.bottomRight().y()));
 					bbox.setBottomRight(bottomRight);
 				}
 				//selection box's size was decreased by 1 px to get rid of a persistent bug
