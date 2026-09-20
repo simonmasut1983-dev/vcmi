@@ -46,6 +46,7 @@
       "basic": {}
     },
     "flags": {
+      "special": true,
       "positive": true
     },
     "type": "combat",

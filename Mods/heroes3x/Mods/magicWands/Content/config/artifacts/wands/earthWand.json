@@ -1,0 +1,38 @@
+{
+  "earthWand": {
+    "type": [
+      "HERO"
+    ],
+    "slot": "RIGHT_HAND",
+    "class": "TREASURE",
+    "value": 3000,
+    "bonuses": {
+      "castLevelOneSpells": {
+        "type": "SPELLS_OF_SCHOOL_LEVEL",
+        "subtype": "earth",
+        "val": 1,
+        "limiters": [
+          {
+            "type": "HAS_CHARGES_LIMITER",
+            "cost": 1
+          }
+        ]
+      }
+    },
+    "graphics": {
+      "image": "artifacts/magicWands/earthWand.png",
+      "scenarioBonus": "artifacts/magicWands/earthWand.png",
+      "map": "artifacts/map/earthWandMap"
+    },
+    "text": {
+      "name": "Earth Wand",
+      "description": "{Earth Wand}\n\nAdds all level 1 earth wand spells to the spellbook. It starts with 5 charges and spends one charge per cast.",
+      "event": "You find a charged earth wand humming with contained magic."
+    },
+    "charged": {
+      "usageType": "SPELLCAST",
+      "removeOnDepletion": true,
+      "startingCharges": 5
+    }
+  }
+}

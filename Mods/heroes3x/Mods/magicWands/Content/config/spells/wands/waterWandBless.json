@@ -49,6 +49,7 @@
       "spell.curse": true
     },
     "flags": {
+      "special": true,
       "positive": true
     },
     "targetCondition": {
