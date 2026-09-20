@@ -48,6 +48,7 @@
       "spell.slow": true
     },
     "flags": {
+      "special": true,
       "positive": true
     },
     "targetCondition": {

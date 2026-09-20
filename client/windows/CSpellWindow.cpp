@@ -309,11 +309,13 @@ void CSpellWindow::processSpells()
 
 		if(onSpellSelect)
 		{
+			const bool heroCanCastSpell = myHero->canCastThisSpell(spell.get());
+			const bool canShowSpell = showAllSpells->isSelected() ? !spell->isSpecial() : heroCanCastSpell;
+
 			if(spell->isCombat() == openOnBattleSpells
-				&& !spell->isSpecial()
 				&& !spell->isCreatureAbility()
 				&& searchTextFound
-				&& (showAllSpells->isSelected() || myHero->canCastThisSpell(spell.get())))
+				&& canShowSpell)
 			{
 				mySpells.push_back(spell.get());
 			}

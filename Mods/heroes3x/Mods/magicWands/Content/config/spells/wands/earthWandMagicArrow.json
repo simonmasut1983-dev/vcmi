@@ -1,67 +1,64 @@
 {
-  "earthWandSlow": {
+  "earthWandMagicArrow": {
     "targetType": "CREATURE",
     "animation": {
-      "affect": [
+      "projectile": [
         {
-          "defName": "C09SPE0",
-          "verticalPosition": "bottom"
+          "minimumAngle": 0,
+          "defName": "C20SPX4"
+        },
+        {
+          "minimumAngle": 0.6,
+          "defName": "C20SPX3"
+        },
+        {
+          "minimumAngle": 0.9,
+          "defName": "C20SPX2"
+        },
+        {
+          "minimumAngle": 1.2,
+          "defName": "C20SPX1"
+        },
+        {
+          "minimumAngle": 1.5,
+          "defName": "C20SPX0"
         }
+      ],
+      "hit": [
+        "C20SPX"
       ]
     },
     "sounds": {
-      "cast": "MUCKMIRE"
+      "cast": "MAGICBLT"
     },
     "levels": {
       "base": {
         "range": "0",
+        "battleEffects": {
+          "directDamage": {
+            "type": "core:damage"
+          }
+        },
         "targetModifier": {
           "smart": true
         },
-        "effects": {
-          "stacksSpeed": {
-            "type": "STACKS_SPEED",
-            "val": -25,
-            "valueType": "PERCENT_TO_ALL",
-            "duration": "N_TURNS"
-          }
-        },
-        "description": "{Slow}\n\nCasts Slow from a charged magic wand.",
+        "description": "{Magic Arrow}\n\nCasts Magic Arrow from a charged magic wand.",
         "cost": 2,
         "power": 10
       },
-      "advanced": {
-        "effects": {
-          "stacksSpeed": {
-            "val": -50
-          }
-        }
-      },
-      "expert": {
-        "range": "X",
-        "effects": {
-          "stacksSpeed": {
-            "val": -50
-          }
-        }
-      },
       "none": {},
-      "basic": {}
-    },
-    "counters": {
-      "spell.haste": true
+      "basic": {},
+      "advanced": {},
+      "expert": {}
     },
     "flags": {
       "special": true,
+      "damage": true,
       "negative": true
     },
-    "targetCondition": {
-      "noneOf": {
-        "bonus.SIEGE_WEAPON": "absolute"
-      }
-    },
+    "targetCondition": {},
     "type": "combat",
-    "name": "Wand: Slow",
+    "name": "Wand: Magic Arrow",
     "school": {
       "air": false,
       "earth": true,

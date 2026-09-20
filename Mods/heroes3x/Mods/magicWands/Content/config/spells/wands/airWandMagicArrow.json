@@ -52,6 +52,7 @@
       "expert": {}
     },
     "flags": {
+      "special": true,
       "damage": true,
       "negative": true
     },

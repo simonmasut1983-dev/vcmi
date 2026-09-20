@@ -52,6 +52,7 @@
       "spell.weakness": true
     },
     "flags": {
+      "special": true,
       "positive": true
     },
     "targetCondition": {

@@ -49,6 +49,7 @@
       "spell.bless": true
     },
     "flags": {
+      "special": true,
       "negative": true
     },
     "targetCondition": {

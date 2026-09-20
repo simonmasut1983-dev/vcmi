@@ -8,32 +8,27 @@
 		"min" : "1.7.4"
 	},
 	"artifacts" : [
-		"config/artifacts/wands/airWandHaste",
-		"config/artifacts/wands/airWandMagicArrow",
-		"config/artifacts/wands/earthWandShield",
-		"config/artifacts/wands/earthWandSlow",
-		"config/artifacts/wands/earthWandStoneSkin",
-		"config/artifacts/wands/fireWandBloodlust",
-		"config/artifacts/wands/fireWandCurse",
-		"config/artifacts/wands/fireWandMagicArrow",
-		"config/artifacts/wands/waterWandBless",
-		"config/artifacts/wands/waterWandCure",
-		"config/artifacts/wands/waterWandDispel"
+		"config/artifacts/wands/airWand",
+		"config/artifacts/wands/earthWand",
+		"config/artifacts/wands/fireWand",
+		"config/artifacts/wands/waterWand"
 	],
 	"spells" : [
 		"config/spells/wands/airWandHaste",
 		"config/spells/wands/airWandMagicArrow",
+		"config/spells/wands/earthWandMagicArrow",
 		"config/spells/wands/earthWandShield",
 		"config/spells/wands/earthWandSlow",
 		"config/spells/wands/earthWandStoneSkin",
 		"config/spells/wands/fireWandBloodlust",
 		"config/spells/wands/fireWandCurse",
 		"config/spells/wands/fireWandMagicArrow",
+		"config/spells/wands/waterWandMagicArrow",
 		"config/spells/wands/waterWandBless",
 		"config/spells/wands/waterWandCure",
 		"config/spells/wands/waterWandDispel"
 	],
 	"objects" : [
-		"config/objects/randomMagicWand"
+		"config/objects/randomMagicWandPool"
 	]
 }
